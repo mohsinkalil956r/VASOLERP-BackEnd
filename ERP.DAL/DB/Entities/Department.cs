@@ -6,14 +6,11 @@ using System.Threading.Tasks;
 
 namespace ERP.DAL.DB.Entities
 {
-    public class Client : IBaseEntity
+    public class Department : IBaseEntity
     {
         public int Id { get; set; }
         public bool IsActive { get; set; } = true;
         public string Name { get; set; }
-
-        public List<Project> Projects { get; set; } = new();
-        public List<ClientContact> ClientContacts { get; set; } = new();
 
     }
 }

@@ -54,17 +54,29 @@ namespace ERP.DAL.DB
                 .WithMany(e => e.Projects)
                 .UsingEntity<ProjectEmployee>();
 
+            builder.Entity<Asset>()
+                .HasMany(e => e.Employees)
+                .WithMany(e => e.Assets)
+                .UsingEntity<AssetIssuance>();
+
             SeedData.Seed(builder);
         }
 
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<UserPermission> UserPermissions { get; set; }
-
         public DbSet<Client> Clients { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<ProjectEmployee> ProjectEmployees { get; set; }
         public DbSet<ProjectStatus> ProjectStatuses { get; set; }
-
+        public DbSet<Asset> Assets { get; set; }
+        public DbSet<AssetType> AssetType { get; set; }
+        public DbSet<AssetIssuance> AssetIssuances { get; set; }
+        public DbSet<ClientContact> ClientContacts { get; set; }
+        public DbSet<Department> Departments { get; set; }
+        public DbSet<EmployeeContact> EmployeeContacts { get; set; }
+        public DbSet<Expense> Expenses { get; set; }
+        public DbSet<ExpenseType> ExpenseTypes { get; set; }
+        public DbSet<PaymentMode> PaymentModes { get; set; }
     }
 }
