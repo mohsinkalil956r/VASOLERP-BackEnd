@@ -25,8 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Proteris.BL\ERP.BL.csproj" />
-    <ProjectReference Include="..\Proteris.DAL\ERP.DAL.csproj" />
+    <ProjectReference Include="..\ERP.BL\ERP.BL.csproj" />
+    <ProjectReference Include="..\ERP.DAL\ERP.DAL.csproj" />
   </ItemGroup>
 
   <ItemGroup>
