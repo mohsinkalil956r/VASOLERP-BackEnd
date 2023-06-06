@@ -54,7 +54,7 @@ namespace ERP.API.Controllers
 
         // POST api/<ValuesController>
         [HttpPost]
-        public async void Post([FromBody] ProjectPostVM model)
+        public async Task Post([FromBody] ProjectPostVM model)
         {
             var project = new Project
             {
