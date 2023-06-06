@@ -54,7 +54,7 @@ namespace ERP.API.Controllers
 
         // POST api/<ValuesController>
         [HttpPost]
-        public async void Post([FromBody] ProjectPostVM model)
+        public async Task<IActionResult> Post([FromBody] ProjectPostVM model)
         {
             var project = new Project
             {
@@ -69,6 +69,7 @@ namespace ERP.API.Controllers
 
             _repository.Add(project);
             await _repository.SaveChanges();
+            return Ok();
         }
 
         // PUT api/<ValuesController>/5

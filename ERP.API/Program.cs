@@ -79,6 +79,8 @@ public class Program
         builder.Services.AddTransient<IProjectRepository, ProjectRepository>();
         builder.Services.AddSingleton<IJWTManager, JWTManager>();
         builder.Services.AddTransient<IUserRepository, UserRepository>();
+        builder.Services.AddTransient<IExpenseTypeRepository, ExpenseTypeRepository>();
+        builder.Services.AddTransient<IExpenseRepository, ExpenseRepository>();
 
         builder.Services.AddAutoMapper(typeof(MapperProfile));
 
