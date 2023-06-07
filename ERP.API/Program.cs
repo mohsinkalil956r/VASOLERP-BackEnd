@@ -85,6 +85,7 @@ public class Program
         builder.Services.AddTransient<IAssetTypeRepository, AssetTypeRepository>();
         builder.Services.AddTransient<IAssetRepository,AssetRepository>();
 
+        builder.Services.AddTransient<IDepartmentRepository, DepartmentRepository>();
         builder.Services.AddAutoMapper(typeof(MapperProfile));
 
         builder.Services.AddControllers();
