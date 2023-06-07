@@ -81,6 +81,7 @@ public class Program
         builder.Services.AddTransient<IUserRepository, UserRepository>();
         builder.Services.AddTransient<IClientContactRepository, ClientContactRepository>();
         builder.Services.AddTransient<IEmployeeContactRepository, EmployeeContactRepository>();
+        builder.Services.AddTransient<IClientsRepository, ClientsRepository>();
 
         builder.Services.AddAutoMapper(typeof(MapperProfile));
 
