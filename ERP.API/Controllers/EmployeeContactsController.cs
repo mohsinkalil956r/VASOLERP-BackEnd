@@ -19,7 +19,7 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IEnumerable<Object>> Get()
+        public async Task<IActionResult> Get()
         {
             var employeeContacts = await this._repository.Get()
                 .Include(e => e.Employee).ToListAsync();
@@ -35,7 +35,7 @@ namespace ERP.API.Controllers
 
             }).ToList();
 
-            return result;
+            return Ok(result);
         }
 
         // GET api/<ValuesController>/5
@@ -107,8 +107,19 @@ namespace ERP.API.Controllers
 
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
+            var employeeContact = await this._repository.Get(id).FirstOrDefaultAsync();
+
+            if (employeeContact != null) 
+            {
+                employeeContact.IsActive = false;
+
+                return Ok();
+            }
+
+            return NotFound();
+
         }
     }
 }
