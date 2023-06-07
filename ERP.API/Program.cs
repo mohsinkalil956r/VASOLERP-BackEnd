@@ -80,6 +80,7 @@ public class Program
         builder.Services.AddSingleton<IJWTManager, JWTManager>();
         builder.Services.AddTransient<IUserRepository, UserRepository>();
         builder.Services.AddTransient<IClientContactRepository, ClientContactRepository>();
+        builder.Services.AddTransient<IEmployeeContactRepository, EmployeeContactRepository>();
 
         builder.Services.AddAutoMapper(typeof(MapperProfile));
 
