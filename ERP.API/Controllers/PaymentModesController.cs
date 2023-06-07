@@ -21,7 +21,7 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IEnumerable<Object>> Get()
+        public async Task<IActionResult> Get()
         {
             var paymentModes = await this._repository.Get().ToListAsync();
 
@@ -31,7 +31,7 @@ namespace ERP.API.Controllers
 
             }).ToList();
 
-            return result;
+            return Ok(result);
         }
 
         // GET api/<ValuesController>/5
@@ -88,8 +88,19 @@ namespace ERP.API.Controllers
 
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
+            var paymentMode = await this._repository.Get(id).FirstOrDefaultAsync();
+
+            if (paymentMode != null)
+            {
+                paymentMode.IsActive = false;
+
+                return Ok();
+            }
+
+            return NotFound();
+
         }
     }
 }
