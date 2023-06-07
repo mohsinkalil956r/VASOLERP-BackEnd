@@ -22,7 +22,7 @@ public class Program
 
         // Add services to the container.
 
-        builder.Services.AddDbContext<ERPContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ERPConnection")));
+        builder.Services.AddDbContext<ERPContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ERPConnectionString")));
 
         builder.Services.AddIdentity<SystemUser, Role>(options =>
         {
@@ -79,6 +79,10 @@ public class Program
         builder.Services.AddTransient<IProjectRepository, ProjectRepository>();
         builder.Services.AddSingleton<IJWTManager, JWTManager>();
         builder.Services.AddTransient<IUserRepository, UserRepository>();
+        builder.Services.AddTransient<IClientContactRepository, ClientContactRepository>();
+        builder.Services.AddTransient<IEmployeeContactRepository, EmployeeContactRepository>();
+        builder.Services.AddTransient<IClientsRepository, ClientsRepository>();
+        builder.Services.AddTransient<IAssetTypeRepository, AssetTypeRepository>();
         builder.Services.AddTransient<IAssetRepository,AssetRepository>();
 
         builder.Services.AddAutoMapper(typeof(MapperProfile));
