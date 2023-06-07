@@ -27,7 +27,6 @@ namespace ERP.API.Controllers
             var assets = await this._repository.Get()
                 .Include(p => p.Employees)
                 .Include(p => p.AssetType)
-                
                 .ToListAsync();
 
             var result = assets.Select(p => new
@@ -37,7 +36,6 @@ namespace ERP.API.Controllers
                 p.PurchaseDate,
                 p.PurchasePrice,
                 AssetType = new { p.AssetType.Id, p.AssetType.Name },
-               
                 Employees = p.Employees.Select(e => new { e.Id, e.FristName, e.LastName })
 
             }).ToList();
@@ -49,16 +47,21 @@ namespace ERP.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-            var asset = await this._repository.Get(id).Include(p=>p.AssetType).Include(p=>p.Employees).FirstOrDefaultAsync();
+            var asset = await this._repository.Get(id)
+                .Include(p => p.AssetType)
+                .Include(p => p.Employees)
+                .FirstOrDefaultAsync();
+
             if (asset != null)
             {
-                var result = new AssetGetVM
+                var result = new
                 {
-                    Name = asset.Name, Description = asset.Description, PurchaseDate = asset.PurchaseDate, PurchasePrice = asset.PurchasePrice,
-                    AssetTypeId = asset.AssetType.Id,
-                  
-
-
+                    asset.Name,
+                    asset.Description,
+                    asset.PurchaseDate,
+                    asset.PurchasePrice,
+                    AssetType = new { asset.AssetType.Id, asset.AssetType.Name },
+                    Employees = asset.Employees.Select(e => new { e.Id, e.FristName, e.LastName })
                 };
                 return Ok(result);
             }
@@ -75,8 +78,7 @@ namespace ERP.API.Controllers
                Description = model.Description,
                PurchaseDate = model.PurchaseDate,
                PurchasePrice = model.PurchasePrice,
-               AssetTypeId = model.AssetTypeId,
-                AssetIssuances = model.EmployeeIds.Select(x => new AssetIssuance { EmployeeId = x }).ToList()
+               AssetTypeId = model.AssetTypeId
             };
 
             _repository.Add(asset);
@@ -91,16 +93,12 @@ namespace ERP.API.Controllers
 
             if (asset != null)
             {
-                asset.AssetIssuances = model.EmployeeIds.Select(e => new AssetIssuance { EmployeeId = e }).ToList();
                 asset.Name = model.Name;
                 asset.AssetTypeId = model.AssetTypeId;
                 asset.Description = model.Description;
                 asset.PurchasePrice = model.PurchasePrice;
                 asset.PurchaseDate = model.PurchaseDate;
                 
-               
-              
-
                 this._repository.Update(asset);
                 await this._repository.SaveChanges();
 
@@ -115,10 +113,11 @@ namespace ERP.API.Controllers
         [HttpDelete("{id}")]
         public async Task Delete(int id)
         {
-            var asset = await this._repository.Get(id).Include(p => p.AssetIssuances).FirstOrDefaultAsync();
+            var asset = await this._repository.Get(id).FirstOrDefaultAsync();
             if (asset != null)
             {
                 asset.IsActive= false;
+                await this._repository.SaveChanges();
             }
         }
     }

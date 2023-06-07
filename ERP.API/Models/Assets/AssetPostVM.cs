@@ -10,8 +10,5 @@ namespace ERP.API.Models.Assets
         public double PurchasePrice { get; set; }
         public int AssetTypeId { get; set; }
       
-        public List<int> EmployeeIds { get; set; } = new();
-
-
     }
 }
