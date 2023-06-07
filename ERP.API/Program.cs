@@ -79,8 +79,14 @@ public class Program
         builder.Services.AddTransient<IProjectRepository, ProjectRepository>();
         builder.Services.AddSingleton<IJWTManager, JWTManager>();
         builder.Services.AddTransient<IUserRepository, UserRepository>();
+        builder.Services.AddTransient<IClientContactRepository, ClientContactRepository>();
+        builder.Services.AddTransient<IEmployeeContactRepository, EmployeeContactRepository>();
+        builder.Services.AddTransient<IClientsRepository, ClientsRepository>();
+        builder.Services.AddTransient<IAssetTypeRepository, AssetTypeRepository>();
+        builder.Services.AddTransient<IAssetRepository,AssetRepository>();
         builder.Services.AddTransient<IPaymentModeRepository, PaymentModeRepository>();
 
+        builder.Services.AddTransient<IDepartmentRepository, DepartmentRepository>();
         builder.Services.AddAutoMapper(typeof(MapperProfile));
 
         builder.Services.AddControllers();
