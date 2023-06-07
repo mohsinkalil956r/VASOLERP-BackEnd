@@ -22,7 +22,7 @@ public class Program
 
         // Add services to the container.
 
-        builder.Services.AddDbContext<ERPContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ERPContext")));
+        builder.Services.AddDbContext<ERPContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("ERPConnectionString")));
 
         builder.Services.AddIdentity<SystemUser, Role>(options =>
         {
