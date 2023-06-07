@@ -79,8 +79,13 @@ namespace ERP.API.Controllers
 
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task Delete(int id)
         {
+            var department = await this._repository.Get(id).FirstOrDefaultAsync();
+            if (department != null)
+            {
+                department.IsActive = false;
+            }
         }
     }
 }
