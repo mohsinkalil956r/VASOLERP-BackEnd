@@ -54,7 +54,7 @@ namespace ERP.API.Controllers
 
         // POST api/<ValuesController>
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] ProjectPostVM model)
+        public async Task Post([FromBody] ProjectPostVM model)
         {
             var project = new Project
             {
@@ -69,7 +69,6 @@ namespace ERP.API.Controllers
 
             _repository.Add(project);
             await _repository.SaveChanges();
-            return Ok();
         }
 
         // PUT api/<ValuesController>/5
@@ -101,8 +100,13 @@ namespace ERP.API.Controllers
 
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task Delete(int id)
         {
+            var project = await this._repository.Get(id).Include(p => p.ProjectEmployees).FirstOrDefaultAsync();
+            if (project != null)
+            {
+                project.IsActive = false;
+            }
         }
     }
 }
