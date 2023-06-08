@@ -1,4 +1,5 @@
-﻿using ERP.API.Models.DepartmentController;
+﻿using ERP.API.Models.Client;
+using ERP.API.Models.DepartmentController;
 using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
@@ -27,6 +28,7 @@ namespace ERP.API.Controllers
 
             var departmentresult = departments.Select(p => new
             {
+                p.Id,
                 p.Name,
 
             }).ToList();
@@ -36,10 +38,23 @@ namespace ERP.API.Controllers
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            return "value";
+            var department = await this._repository.Get(id).FirstOrDefaultAsync();
+            if (department != null)
+            {
+                var result = new DepartmentGetVM
+                {
+                    Name = department.Name,
+                };
+
+
+                return Ok(result);
+
+            }
+            return NotFound();
         }
+
 
         // POST api/<ValuesController>
         [HttpPost]
@@ -79,8 +94,14 @@ namespace ERP.API.Controllers
 
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task Delete(int id)
         {
+            var department = await this._repository.Get(id).FirstOrDefaultAsync();
+            if (department != null)
+            {
+                department.IsActive = false;
+                await this._repository.SaveChanges();
+            }
         }
     }
 }

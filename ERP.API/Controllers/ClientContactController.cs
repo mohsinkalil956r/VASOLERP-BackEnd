@@ -7,6 +7,7 @@ using ERP.API.Models.ClientContacts;
 using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
 using System.Net;
+using ERP.API.Models.Client;
 
 namespace ERP.API.Controllers
 {
@@ -44,6 +45,7 @@ namespace ERP.API.Controllers
 
             var result = clientContact.Select(p => new
             {
+                p.Id,
                 p.PhoneNumber,
                 p.Email,
                 p.Address,
@@ -61,10 +63,27 @@ namespace ERP.API.Controllers
 
 
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            return "value";
+            var clientcontact = await this._repository.Get(id).FirstOrDefaultAsync();
+            if (clientcontact != null)
+            {
+                var result = new ClientContactGetVM
+                {
+                    PhoneNumber = clientcontact.PhoneNumber,
+                    Address = clientcontact.Address,
+                    Email = clientcontact.Email,
+                    Website = clientcontact.Website,
+
+                };
+
+
+                return Ok(result);
+
+            }
+            return NotFound();
         }
+
 
 
 
@@ -94,8 +113,14 @@ namespace ERP.API.Controllers
 
         
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task Delete(int id)
         {
+            var clientcontact = await this._repository.Get(id).FirstOrDefaultAsync();
+            if (clientcontact != null)
+            {
+                clientcontact.IsActive = false;
+                await this._repository.SaveChanges();
+            }
         }
     }
 }
