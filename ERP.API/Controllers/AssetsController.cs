@@ -31,6 +31,7 @@ namespace ERP.API.Controllers
 
             var result = assets.Select(p => new
             {
+                p.Id,
                 p.Name,
                 p.Description,
                 p.PurchaseDate,

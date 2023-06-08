@@ -30,6 +30,7 @@ namespace ERP.API.Controllers
 
             var result = assetType.Select(p => new
             {
+                   p.Id,
                    p.Name,
                  Assets=  p.Assets.Select(a => new { a.Name, a.PurchaseDate,a.PurchasePrice,a.Description,
                  })
@@ -97,6 +98,7 @@ namespace ERP.API.Controllers
             if (assetType!=null)
             {
                 assetType.IsActive=false;
+                await this._repository.SaveChanges();
 
                 return Ok();
 
