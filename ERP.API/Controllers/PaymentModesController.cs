@@ -1,4 +1,5 @@
-﻿using ERP.API.Models.PaymentModes;
+﻿using ERP.API.Models;
+using ERP.API.Models.PaymentModes;
 using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
@@ -21,7 +22,7 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IEnumerable<Object>> Get()
+        public async Task<APIResponse<Object>> Get()
         {
             var paymentModes = await this._repository.Get().ToListAsync();
 
@@ -31,7 +32,12 @@ namespace ERP.API.Controllers
 
             }).ToList();
 
-            return result;
+            return new APIResponse<object>
+            {
+                IsError = false,
+                Message = "",
+                data = result
+            };
         }
 
         // GET api/<ValuesController>/5
