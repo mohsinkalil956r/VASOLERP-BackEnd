@@ -7,6 +7,7 @@ using ERP.API.Models.ClientContacts;
 using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
 using System.Net;
+using ERP.API.Models.PaymentModes;
 
 namespace ERP.API.Controllers
 {
@@ -37,7 +38,7 @@ namespace ERP.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<Object>> Get()
+        public async Task<APIResponse<Object>> Get()
         {
             var clientContact = await this._repository.Get()
                 .Include(p => p.Client).ToListAsync();
@@ -52,18 +53,39 @@ namespace ERP.API.Controllers
 
             }).ToList();
 
-            return result;
+            return new APIResponse<object>
+            {
+                IsError = false,
+                Message = "",
+                data = result
+            };
         }
 
 
 
 
 
-
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            return "value";
+            var clientcontact = await this._repository.Get(id).FirstOrDefaultAsync();
+
+            if (clientcontact != null)
+            {
+                var result = new ClientContactGetVM
+                {
+                    PhoneNumber = clientcontact.PhoneNumber,
+                    Email = clientcontact.Email,
+                    Website = clientcontact.Website,
+                    Address = clientcontact.Address,
+                   
+
+                    
+                };
+                return Ok(result);
+            }
+            return NotFound();
+
         }
 
 
