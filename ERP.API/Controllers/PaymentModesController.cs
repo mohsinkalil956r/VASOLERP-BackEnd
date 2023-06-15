@@ -28,6 +28,7 @@ namespace ERP.API.Controllers
 
             var result = paymentModes.Select(p => new
             {
+                p.Id,
                 p.Name
 
             }).ToList();
@@ -48,11 +49,17 @@ namespace ERP.API.Controllers
 
             if(paymentMode != null) 
             {
-                var result = new PaymentModeGetVM
+                var result = new
                 {
-                    Name = paymentMode.Name,
+                    paymentMode.Id,
+                    paymentMode.Name,
                 };
-                return Ok(result);
+                return Ok(new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                    data = result
+                });
             }
             return NotFound();
            
