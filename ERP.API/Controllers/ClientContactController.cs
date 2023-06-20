@@ -94,8 +94,14 @@ namespace ERP.API.Controllers
 
         
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        
+        public async Task Delete(int id)
         {
+            var clientContact = await this._repository.Get(id).Include(p => p.ClientId).FirstOrDefaultAsync();
+            if (clientContact != null)
+            {
+                clientContact.IsActive = false;
+            }
         }
     }
 }
