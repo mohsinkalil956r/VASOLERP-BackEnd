@@ -1,4 +1,6 @@
-﻿using ERP.API.Models.DepartmentController;
+﻿using ERP.API.Models;
+using ERP.API.Models.DepartmentController;
+using ERP.API.Models.PaymentModes;
 using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
@@ -20,7 +22,7 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IEnumerable<Object>> Get()
+        public async Task<APIResponse<Object>> Get()
         {
             var departments = await this._repository.Get().ToListAsync();
                 
@@ -31,14 +33,30 @@ namespace ERP.API.Controllers
 
             }).ToList();
 
-            return departmentresult;
+            return new APIResponse<object>
+            {
+                IsError = false,
+                Message = "",
+                data = departmentresult
+            };
         }
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            return "value";
+            var department = await this._repository.Get(id).FirstOrDefaultAsync();
+
+            if (department != null)
+            {
+                var result = new DepatmentGetVM
+                {
+                    Name = department.Name,
+                };
+                return Ok(result);
+            }
+            return NotFound();
+
         }
 
         // POST api/<ValuesController>
