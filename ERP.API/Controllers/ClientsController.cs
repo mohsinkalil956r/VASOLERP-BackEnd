@@ -99,7 +99,7 @@ namespace ERP.API.Controllers
             if (clients != null)
             {
                clients.IsActive= false;
-                _repository.SaveChanges();
+               await  this._repository.SaveChanges();
             }
             return Ok();
         }
