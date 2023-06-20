@@ -1,4 +1,5 @@
-﻿using ERP.API.Models.Client;
+﻿using ERP.API.Models;
+using ERP.API.Models.Client;
 using ERP.API.Models.DepartmentController;
 using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
@@ -21,7 +22,7 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IEnumerable<Object>> Get()
+        public async Task<APIResponse<object>> Get()
         {
             var departments = await this._repository.Get().ToListAsync();
                 
@@ -33,12 +34,17 @@ namespace ERP.API.Controllers
 
             }).ToList();
 
-            return departmentresult;
+            return new APIResponse<object>
+            {
+                IsError = false,
+                Message = "",
+                data = departmentresult
+            };
         }
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<APIResponse<object>> Get(int id)
         {
             var department = await this._repository.Get(id).FirstOrDefaultAsync();
             if (department != null)
@@ -49,10 +55,19 @@ namespace ERP.API.Controllers
                 };
 
 
-                return Ok(result);
+                return new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                    data = result
+                };
 
             }
-            return NotFound();
+            return new APIResponse<object>
+            {
+                IsError = false,
+                Message = ""
+            };
         }
 
 
@@ -72,7 +87,7 @@ namespace ERP.API.Controllers
 
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] DepartmentPutVM departments)
+        public async Task<APIResponse<object>> Put(int id, [FromBody] DepartmentPutVM departments)
         {
             var department = await this._repository.Get(id).FirstOrDefaultAsync();
 
@@ -85,24 +100,46 @@ namespace ERP.API.Controllers
                 this._repository.Update(department);
                 await this._repository.SaveChanges();
 
-                return Ok();
+                return new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                    data = department
+                };
             }
 
-            return NotFound();
+            return new APIResponse<object>
+            {
+                IsError = false,
+                Message = ""
+            };
 
         }
 
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
-        public async Task Delete(int id)
+        public async Task<APIResponse<object>> Delete(int id)
         {
             var department = await this._repository.Get(id).FirstOrDefaultAsync();
             if (department != null)
             {
                 department.IsActive = false;
                 await this._repository.SaveChanges();
+
+                return new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                    data = department
+                };
             }
+            return new APIResponse<object>
+            {
+                IsError = false,
+                Message = ""
+            };
         }
+
     }
 }
 

@@ -6,5 +6,7 @@
         public string PhoneNumber { get; set; }
         public string Website { get; set; }
         public string Address { get; set; }
+
+        public int ClientId { get; set; }
     }
 }
