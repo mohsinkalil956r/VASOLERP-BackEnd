@@ -43,26 +43,31 @@ namespace ERP.API.Controllers
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<APIResponse<object>> Get(int id)
         {
             var paymentMode = await this._repository.Get(id).FirstOrDefaultAsync();
 
-            if(paymentMode != null) 
+            if (paymentMode != null)
             {
                 var result = new
                 {
-                    paymentMode.Id,
-                    paymentMode.Name,
+
+                    Name = paymentMode.Name,
                 };
-                return Ok(new APIResponse<object>
+                return new APIResponse<object>
                 {
                     IsError = false,
                     Message = "",
                     data = result
-                });
+                };
             }
-            return NotFound();
-           
+            return new APIResponse<object>
+            {
+                IsError = true,
+                Message = "",
+
+            };
+
         }
 
         // POST api/<ValuesController>
@@ -80,7 +85,7 @@ namespace ERP.API.Controllers
 
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] PaymentModePutVM model)
+        public async Task<APIResponse<object>> Put(int id, [FromBody] PaymentModePutVM model)
         {
             var paymentMode = await this._repository.Get(id).FirstOrDefaultAsync();
 
@@ -88,21 +93,49 @@ namespace ERP.API.Controllers
             {
 
                 paymentMode.Name = model.Name;
-                
+
                 this._repository.Update(paymentMode);
                 await this._repository.SaveChanges();
 
-                return Ok();
+                return new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                };
             }
 
-            return NotFound();
+            return new APIResponse<object>
+            {
+                IsError = true,
+                Message = "",
+            };
 
         }
 
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<APIResponse<object>> Delete(int id)
         {
+            var paymentMode = await this._repository.Get(id).FirstOrDefaultAsync();
+
+            if (paymentMode != null)
+            {
+                paymentMode.IsActive = false;
+
+                return new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                };
+            }
+
+            return new APIResponse<object>
+            {
+                IsError = true,
+                Message = "",
+            };
+
         }
+
     }
 }
