@@ -1,8 +1,11 @@
-﻿namespace ERP.API.Models.AssetType
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace ERP.API.Models.AssetType
 {
     public class AssetTypePostVM
     {
-      public  string Name { get; set; }
-    
+        [Required]
+        public  string Name { get; set; }
+
     }
 }
