@@ -19,9 +19,22 @@ namespace ERP.API.Controllers
         }
         [HttpGet]
         public async Task<IEnumerable<object>> Get()
-        {
-            return  await this._repository.Get().ToListAsync();
-            
+        { 
+            var expense = await this._repository.Get()
+                .Include(e => e.ExpenseType)
+                .Include(e => e.PaymentMode)
+                .ToListAsync();
+            var result = expense.Select(r => new
+            {
+                r.Id,
+                r.ExpenseDate,
+                r.Description,
+                r.Amount,
+                ExpenseType = new { r.ExpenseType.Id, r.ExpenseType.Name },
+                PaymentMode = new { r.PaymentMode.Id, r.PaymentMode.Name },
+
+            }).ToList();
+            return result;
         }
         [HttpGet("id")]
         public async Task<IActionResult> Get(int id) { 
@@ -66,7 +79,7 @@ namespace ERP.API.Controllers
         var expense = this._repository.Get(id).FirstOrDefault();
             if(expense != null)
             {
-                this._repository.Delete(id);
+                expense.IsActive = false;
                 await this._repository.SaveChanges();
                 return Ok();
             }

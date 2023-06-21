@@ -1,6 +1,7 @@
 ﻿using ERP.API.Models;
 using ERP.API.Models.Client;
 using ERP.API.Models.DepartmentController;
+using ERP.API.Models.PaymentModes;
 using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;

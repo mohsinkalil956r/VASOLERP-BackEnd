@@ -5,6 +5,8 @@ using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
 using ERP.API.Models.AssetType;
 using System.Runtime.CompilerServices;
+using ERP.API.Models;
+using System.Xml.Linq;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -20,38 +22,58 @@ namespace ERP.API.Controllers
             this._repository = repository;
         }
 
-
-        // GET: api/<ValuesController>
+        // GET api/<ValuesController>/5
         [HttpGet]
-        public async Task<IEnumerable<Object>> Get()
+        public async Task<APIResponse<Object>> Get()
         {
-            var assetType = await this._repository.Get().Include(p=>p.Assets).ToListAsync();
+            var assets = await this._repository.Get().ToListAsync();
 
-
-            var result = assetType.Select(p => new
+            var result = assets.Select(p => new
             {
-                   p.Name,
-                 Assets=  p.Assets.Select(a => new { a.Name, a.PurchaseDate,a.PurchasePrice,a.Description,
-                 })
+                p.Id,
+                p.Name,
+                Assets = p.Assets.Select(a => new
+                {
+                    a.Name,
+                    a.PurchaseDate,
+                    a.PurchasePrice,
+                    a.Description,
+                })
 
             }).ToList();
 
-            return result;
+            return new APIResponse<object>
+            {
+                IsError = false,
+                Message = "",
+                data = result
+            };
         }
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<APIResponse<object>> Get(int id)
         {
             var assetType = await this._repository.Get(id).Include(p => p.Assets).FirstOrDefaultAsync();
-            if (assetType!=null) {
+            if (assetType != null)
+            {
                 var vm = new AssetTypeGetVM
                 {
                     Name = assetType.Name,
                 };
-                return Ok(vm);
+                return new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                    data = vm
+                };
             }
-            return BadRequest();
+            return new APIResponse<object>
+            {
+                IsError = false,
+                Message = "",
+
+            };
         }
 
         // POST api/<ValuesController>
@@ -61,7 +83,7 @@ namespace ERP.API.Controllers
             var assetType = new AssetType
             {
                 Name = model.Name,
-            
+
             };
 
             _repository.Add(assetType);
@@ -70,38 +92,46 @@ namespace ERP.API.Controllers
 
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] AssetTypePostVM model)
+        public async Task<APIResponse<object>> Put(int id, [FromBody] AssetTypePostVM model)
         {
-            var assetType = await this._repository.Get(id).Include(p => p.Assets).FirstOrDefaultAsync();
+            var assetType = await this._repository.Get(id).FirstOrDefaultAsync();
 
-            if (assetType!=null)
+            if (assetType != null)
             {
-            assetType.Name=model.Name;
+                assetType.Name = model.Name;
 
                 this._repository.Update(assetType);
                 await this._repository.SaveChanges();
 
-                return Ok();
+                return new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                };
             }
 
-            return NotFound();
+            return new APIResponse<object>
+            {
+                IsError = false,
+                Message = "",
+
+            };
 
         }
 
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult>  Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
 
             var assetType = await this._repository.Get(id).FirstOrDefaultAsync();
-            if (assetType!=null)
+            if (assetType != null)
             {
-                assetType.IsActive=false;
-
+                assetType.IsActive = false;
+                await this._repository.SaveChanges();
                 return Ok();
 
             }
             return NotFound();
         }
-    }
-}
+    }  }

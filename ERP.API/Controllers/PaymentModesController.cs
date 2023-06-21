@@ -1,4 +1,5 @@
-﻿using ERP.API.Models.PaymentModes;
+﻿using ERP.API.Models;
+using ERP.API.Models.PaymentModes;
 using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
@@ -21,17 +22,23 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IEnumerable<Object>> Get()
+        public async Task<APIResponse<Object>> Get()
         {
             var paymentModes = await this._repository.Get().ToListAsync();
 
             var result = paymentModes.Select(p => new
             {
+                p.Id,
                 p.Name
 
             }).ToList();
 
-            return result;
+            return new APIResponse<object>
+            {
+                IsError = false,
+                Message = "",
+                data = result
+            };
         }
 
         // GET api/<ValuesController>/5
@@ -42,11 +49,17 @@ namespace ERP.API.Controllers
 
             if(paymentMode != null) 
             {
-                var result = new PaymentModeGetVM
+                var result = new
                 {
-                    Name = paymentMode.Name,
+                    paymentMode.Id,
+                    paymentMode.Name,
                 };
-                return Ok(result);
+                return Ok(new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                    data = result
+                });
             }
             return NotFound();
            

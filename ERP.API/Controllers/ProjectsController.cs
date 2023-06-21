@@ -31,6 +31,7 @@ namespace ERP.API.Controllers
 
             var result = projects.Select(p => new
             {
+                p.Id,
                 p.Name,
                 p.Description,
                 p.StartDate,
@@ -47,9 +48,14 @@ namespace ERP.API.Controllers
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            return "value";
+            var expense = await this._repository.Get(id).FirstOrDefaultAsync();
+            if (expense != null)
+            {
+                return Ok(expense);
+            }
+            return NotFound();
         }
 
         // POST api/<ValuesController>
@@ -106,6 +112,7 @@ namespace ERP.API.Controllers
             if (project != null)
             {
                 project.IsActive = false;
+                await this._repository.SaveChanges();
             }
         }
     }

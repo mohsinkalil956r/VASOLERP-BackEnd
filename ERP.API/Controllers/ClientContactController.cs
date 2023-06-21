@@ -8,7 +8,6 @@ using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
 using System.Net;
 using ERP.API.Models.Client;
-using ERP.DAL.Migrations;
 
 namespace ERP.API.Controllers
 { 
@@ -141,7 +140,6 @@ namespace ERP.API.Controllers
                     {
                         IsError = false,
                         Message = "",
-                        data = clientContact
                     };
             }
             return new APIResponse<object>

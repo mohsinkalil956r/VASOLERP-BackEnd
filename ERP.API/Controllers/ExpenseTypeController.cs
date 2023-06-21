@@ -22,17 +22,21 @@ namespace ERP.API.Controllers
         // GET: api/<ValuesController>
         [HttpGet]
         public async Task<IEnumerable<object>> Get() {
-            return await this._repository.Get().ToListAsync();
-            //var expenseType = await this._repository.Get().Include(e => e.Expenses).ToListAsync();
-            //var result = expenseType.Select(s => new
-            //{
-            //    s.Id,
-            //    s.Name,
-            //    Expenses= s.Expenses.Select(ex => new {ex.Id,ex.ExpenseDate,ex.Description,ex.Amount})
+            var expenseType = await this._repository.Get()
+                .Include(e => e.Expenses).ToListAsync();
+            var result = expenseType.Select(r => new
+            {
+                r.Id,
+                r.Name,
+                Expenses = r.Expenses.Select(ex => new { 
+                    ex.Id, 
+                    ex.ExpenseDate, 
+                    ex.Description, 
+                    ex.Amount })
 
-            //}).ToList();
+            }).ToList();
 
-            //return result;
+            return result;
         }
 
         // GET api/<ValuesController>/5
@@ -81,7 +85,7 @@ namespace ERP.API.Controllers
             var expenseType = await this._repository.Get(id).FirstOrDefaultAsync();
             if (expenseType != null)
             {
-                _repository.Delete(id);
+                expenseType.IsActive = false;
                 await this._repository.SaveChanges();
                 return Ok();
             }
