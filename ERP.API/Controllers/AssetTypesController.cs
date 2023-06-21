@@ -21,7 +21,6 @@ namespace ERP.API.Controllers
             this._repository = repository;
         }
 
-
         // GET: api/<ValuesController>
         [HttpGet]
         public async Task<IActionResult> Get()
