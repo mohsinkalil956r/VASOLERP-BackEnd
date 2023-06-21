@@ -4,6 +4,7 @@ using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
 using ERP.API.Models.Assets;
+using ERP.API.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -19,15 +20,11 @@ namespace ERP.API.Controllers
             this._repository = repository;
         }
 
-
-        // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IEnumerable<Object>> Get()
+        public async Task<APIResponse<Object>> Get()
         {
             var assets = await this._repository.Get()
-                .Include(p => p.Employees)
-                .Include(p => p.AssetType)
-                .ToListAsync();
+                .Include(a => a.AssetType).ToListAsync();
 
             var result = assets.Select(p => new
             {
@@ -37,60 +34,79 @@ namespace ERP.API.Controllers
                 p.PurchaseDate,
                 p.PurchasePrice,
                 AssetType = new { p.AssetType.Id, p.AssetType.Name },
-                Employees = p.Employees.Select(e => new { e.Id, e.FristName, e.LastName })
 
             }).ToList();
 
-            return result;
+            return new APIResponse<object>
+            {
+                IsError = false,
+                Message = "",
+                data = result
+            };
         }
+
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<APIResponse<object>> Get(int id)
         {
-            var asset = await this._repository.Get(id)
-                .Include(p => p.AssetType)
-                .Include(p => p.Employees)
-                .FirstOrDefaultAsync();
-
+            var asset = await this._repository.Get(id).FirstOrDefaultAsync();
             if (asset != null)
             {
-                var result = new
+                var result = new AssetGetVM
                 {
-                    asset.Name,
-                    asset.Description,
-                    asset.PurchaseDate,
-                    asset.PurchasePrice,
-                    AssetType = new { asset.AssetType.Id, asset.AssetType.Name },
-                    Employees = asset.Employees.Select(e => new { e.Id, e.FristName, e.LastName })
+                    id = asset.Id,
+                    Name = asset.Name,
+                    Description = asset.Description,
+                    PurchaseDate = asset.PurchaseDate,
+                    PurchasePrice = asset.PurchasePrice,
+
                 };
-                return Ok(result);
+                return new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                    data = result
+                };
             }
-            return NotFound();
+
+            return new APIResponse<object>
+            {
+                IsError = true,
+                Message = "",
+
+            };
         }
-         
+
         // POST api/<ValuesController>
         [HttpPost]
-        public async Task Post([FromBody] AssetPostVM model)
+        public async Task< APIResponse<object>> Post([FromBody] AssetPostVM model)
         {
             var asset = new Asset
             {
-               Name = model.Name,
-               Description = model.Description,
-               PurchaseDate = model.PurchaseDate,
-               PurchasePrice = model.PurchasePrice,
-               AssetTypeId = model.AssetTypeId
+                Name = model.Name,
+                Description = model.Description,
+                PurchaseDate = model.PurchaseDate,
+                PurchasePrice = model.PurchasePrice,
+                AssetTypeId = model.AssetTypeId
             };
 
             _repository.Add(asset);
             await _repository.SaveChanges();
+            return new APIResponse<object>
+            {
+                IsError = true,
+                Message = "",
+                data=asset,
+
+            };
         }
 
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] AssetPutVM model)
+        public async Task<APIResponse<object>> Put(int id, [FromBody] AssetPutVM model)
         {
-            var asset = await this._repository.Get(id).Include(p => p.AssetIssuances).FirstOrDefaultAsync();
+            var asset = await this._repository.Get(id).FirstOrDefaultAsync();
 
             if (asset != null)
             {
@@ -99,27 +115,49 @@ namespace ERP.API.Controllers
                 asset.Description = model.Description;
                 asset.PurchasePrice = model.PurchasePrice;
                 asset.PurchaseDate = model.PurchaseDate;
-                
-                this._repository.Update(asset);
-                await this._repository.SaveChanges();
 
-                return Ok();
+                await this._repository.SaveChanges();
+                //this._repository.Update(asset);
+                //await this._repository.SaveChanges();
+
+                return new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                    data=asset,
+                };
             }
 
-            return NotFound();
+            return new APIResponse<object>
+            {
+                IsError = true,
+                Message = "",
+            };
 
         }
 
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
-        public async Task Delete(int id)
+        public async Task<APIResponse<object>> Delete(int id)
         {
             var asset = await this._repository.Get(id).FirstOrDefaultAsync();
             if (asset != null)
             {
-                asset.IsActive= false;
+                asset.IsActive = false;
                 await this._repository.SaveChanges();
+                return new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                };
             }
+            return new APIResponse<object>
+            {
+                IsError = false,
+                Message = "",
+            };
+
+
         }
     }
 }
