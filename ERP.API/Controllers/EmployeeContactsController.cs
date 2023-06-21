@@ -107,8 +107,14 @@ namespace ERP.API.Controllers
 
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task Delete(int id)
         {
+            var empcontact = await this._repository.Get(id).FirstOrDefaultAsync();
+            if(empcontact!= null)
+            {
+                empcontact.IsActive = false;
+                await this._repository.SaveChanges();
+            }
         }
     }
 }
