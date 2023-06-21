@@ -7,10 +7,10 @@ using ERP.API.Models.ClientContacts;
 using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
 using System.Net;
-using ERP.API.Models.PaymentModes;
+using ERP.API.Models.Client;
 
 namespace ERP.API.Controllers
-{
+{ 
 
     [Route("api/[controller]")]
     [ApiController]
@@ -22,29 +22,16 @@ namespace ERP.API.Controllers
             this._repository = repository;
         }
 
-        [HttpPost]
-        public async Task Post([FromBody] ClientContactPostVM clientcontacts)
-        {
-            var clientContact = new ClientContact
-            {
-                PhoneNumber = clientcontacts.PhoneNumber,
-                Address = clientcontacts.Address,
-                Email = clientcontacts.Email,
-                Website = clientcontacts.Website,
-            };
-
-            _repository.Add(clientContact);
-            await _repository.SaveChanges();
-        }
-
+        
         [HttpGet]
-        public async Task<APIResponse<Object>> Get()
+        public async Task<APIResponse<object>> Get()
         {
             var clientContact = await this._repository.Get()
                 .Include(p => p.Client).ToListAsync();
 
             var result = clientContact.Select(p => new
             {
+                p.Id,
                 p.PhoneNumber,
                 p.Email,
                 p.Address,
@@ -61,44 +48,61 @@ namespace ERP.API.Controllers
             };
         }
 
-
-
-
-
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<APIResponse<object>> Get(int id)
         {
             var clientcontact = await this._repository.Get(id).FirstOrDefaultAsync();
-
             if (clientcontact != null)
             {
                 var result = new ClientContactGetVM
                 {
                     PhoneNumber = clientcontact.PhoneNumber,
+                    Address = clientcontact.Address,
                     Email = clientcontact.Email,
                     Website = clientcontact.Website,
-                    Address = clientcontact.Address,
-                   
 
-                    
                 };
-                return Ok(result);
-            }
-            return NotFound();
 
+                return new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                    data = result
+                };
+
+            }
+            return new APIResponse<object>
+            {
+                IsError = true,
+                Message = ""
+            };
+        }
+
+        [HttpPost]
+        public async Task Post([FromBody] ClientContactPostVM clientcontacts)
+        {
+            var clientContact = new ClientContact
+            {
+                ClientId = clientcontacts.ClientId,
+                PhoneNumber = clientcontacts.PhoneNumber,
+                Address = clientcontacts.Address,
+                Email = clientcontacts.Email,
+                Website = clientcontacts.Website,
+            };
+
+            _repository.Add(clientContact);
+            await _repository.SaveChanges();
         }
 
 
-
-
-
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] ClientContactPutVM clientcontacts)
+        public async Task<APIResponse<object>> Put(int id, [FromBody] ClientContactPutVM clientcontacts)
         {
-            var clientContact = await this._repository.Get().FirstOrDefaultAsync();
+            var clientContact = await this._repository.Get(id).FirstOrDefaultAsync();
 
             if (clientContact != null)
             {
+                clientContact.ClientId = clientcontacts.ClientId; 
                 clientContact.PhoneNumber = clientcontacts.PhoneNumber;
                 clientContact.Address = clientcontacts.Address;
                 clientContact.Email = clientcontacts.Email;
@@ -107,24 +111,44 @@ namespace ERP.API.Controllers
                 this._repository.Update(clientContact);
                 await this._repository.SaveChanges();
 
-                return Ok();
+                return new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                    data = clientContact
+                };
             }
 
-            return NotFound();
-
+            return new APIResponse<object>
+            {
+                IsError = true,
+                Message = ""
+            };
         }
 
         
         [HttpDelete("{id}")]
-        
-        public async Task Delete(int id)
-        {
-            var clientContact = await this._repository.Get(id).Include(p => p.ClientId).FirstOrDefaultAsync();
+        public async Task<APIResponse<object>> Delete(int id)
+            {
+            var clientContact = await this._repository.Get(id).FirstOrDefaultAsync();
             if (clientContact != null)
             {
                 clientContact.IsActive = false;
+                await this._repository.SaveChanges();
+
+                    return new APIResponse<object>
+                    {
+                        IsError = false,
+                        Message = "",
+                    };
             }
+            return new APIResponse<object>
+            {
+                IsError = true,
+                Message = ""
+           };
         }
+
     }
 }
 
