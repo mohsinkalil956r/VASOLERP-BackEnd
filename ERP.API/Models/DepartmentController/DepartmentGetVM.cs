@@ -1,6 +1,6 @@
 ﻿namespace ERP.API.Models.DepartmentController
 {
-    public class DepatmentGetVM : DepartmentPostVM
+    public class DepartmentGetVM : DepartmentPostVM
     {
     }
 }
