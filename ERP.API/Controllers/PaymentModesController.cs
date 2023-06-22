@@ -135,6 +135,7 @@ namespace ERP.API.Controllers
                     Message = "",
                 });
             }
+            await this._repository.SaveChanges();
             return NotFound();
         }
     }
