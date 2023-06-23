@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ERP.DAL.Repositories.Abstraction
 {
-    public interface IProjectStatusRepository : IRepository<ProjectStatus>
+    public interface IStatusRepository : IRepository<Status>
     {
        
     }
