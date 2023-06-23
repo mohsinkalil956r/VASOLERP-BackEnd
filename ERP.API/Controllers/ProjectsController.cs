@@ -39,7 +39,7 @@ namespace ERP.API.Controllers
                 Status = new { p.Status.Id, p.Status.Name },
                 Client = new { p.Client.Id, p.Client.Name },
                 p.Budget,
-                Employees =  p.Employees.Select(e => new { e.Id, e.FristName, e.LastName })
+                Employees =  p.Employees.Select(e => new { e.Id, e.FirstName, e.LastName })
 
             }).ToList();
 
