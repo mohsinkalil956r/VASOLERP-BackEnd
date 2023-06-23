@@ -39,7 +39,7 @@ namespace ERP.API.Controllers
         // GET api/<ValuesController>/5
         [HttpGet("id")]
         public async Task<IActionResult> Get(int id) {
-            var expenseType = await this._repository.Get(id).Include(x => x.Expenses).FirstOrDefaultAsync();
+            var expenseType = await this._repository.Get(id).FirstOrDefaultAsync();
             if(expenseType != null) {
                 var apiResponse = new APIResponse<object>
                 {
