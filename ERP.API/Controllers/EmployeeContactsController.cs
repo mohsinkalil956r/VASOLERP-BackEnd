@@ -32,7 +32,7 @@ namespace ERP.API.Controllers
                 e.PhoneNumber,
                 e.Website,
                 e.Address,
-                Employee = new { e.Employee.Id, e.Employee.FristName, e.Employee.LastName }
+                Employee = new { e.Employee.Id, e.Employee.FirstName, e.Employee.LastName }
 
             }).ToList();
 
