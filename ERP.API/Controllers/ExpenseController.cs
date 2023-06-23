@@ -41,7 +41,7 @@ namespace ERP.API.Controllers
             }) ;
             
         }
-        [HttpGet("id")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id) { 
         var expense = await this._repository.Get(id)
                 .FirstOrDefaultAsync();
@@ -94,7 +94,8 @@ namespace ERP.API.Controllers
                 }
             });
         }
-        [HttpPut("id")]
+
+        [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id,[FromBody] ExpensePutVM model) {
             if (!ModelState.IsValid) { 
                 return BadRequest(ModelState); 
@@ -120,7 +121,7 @@ namespace ERP.API.Controllers
             }
             return NotFound();
         }
-        [HttpDelete("id")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id) {
             var expense = await this._repository.Get(id).SingleOrDefaultAsync();
             if(expense != null)

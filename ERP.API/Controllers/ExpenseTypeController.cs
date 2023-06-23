@@ -37,7 +37,7 @@ namespace ERP.API.Controllers
         }
 
         // GET api/<ValuesController>/5
-        [HttpGet("id")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id) {
             var expenseType = await this._repository.Get(id).FirstOrDefaultAsync();
             if(expenseType != null) {
@@ -82,7 +82,7 @@ namespace ERP.API.Controllers
         }
 
         // PUT api/<ValuesController>/5
-        [HttpPut("id")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] ExpenseTypePutVM model) {
             if(!ModelState.IsValid) {
                 return NotFound(ModelState);
@@ -103,7 +103,7 @@ namespace ERP.API.Controllers
         }
 
         // DELETE api/<ValuesController>/5
-        [HttpDelete("id")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id) {
             var expenseType = await this._repository.Get(id).SingleOrDefaultAsync();
             if (expenseType != null)
