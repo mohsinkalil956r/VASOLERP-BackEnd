@@ -26,6 +26,7 @@ namespace ERP.API.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
+            //Done Refectoring
             var paymentMode = await this._repository.Get().ToListAsync();
             return Ok(new APIResponse<object>
             {
