@@ -14,10 +14,10 @@ namespace ERP.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PaymentModeController : ControllerBase
+    public class PaymentModesController : ControllerBase
     {
         private readonly IPaymentModeRepository _repository;
-        public PaymentModeController(IPaymentModeRepository repository)
+        public PaymentModesController(IPaymentModeRepository repository)
         {
             this._repository = repository;
         }
