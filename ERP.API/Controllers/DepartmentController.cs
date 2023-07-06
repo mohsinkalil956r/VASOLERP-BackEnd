@@ -23,122 +23,118 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<APIResponse<object>> Get()
+        public async Task<IActionResult> Get()
         {
             var departments = await this._repository.Get().ToListAsync();
-                
 
-            var departmentresult = departments.Select(p => new
-            {
-                p.Id,
-                p.Name,
-
-            }).ToList();
-
-            return new APIResponse<object>
+            return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = departmentresult
-            };
-        }
+                data = departments.Select(d => new
+                {
+                    Id = d.Id,
+                    name = d.Name
+                })
+            });
+        } 
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        public async Task<APIResponse<object>> Get(int id)
-        {
-            var department = await this._repository.Get(id).FirstOrDefaultAsync();
-            if (department != null)
+
+        public async Task<IActionResult> Get(int id)
             {
-                var result = new DepartmentGetVM
+                var department = await this._repository.Get(id).FirstOrDefaultAsync();
+                if (department != null)
                 {
-                    Name = department.Name,
-                };
-
-
-                return new APIResponse<object>
-                {
-                    IsError = false,
-                    Message = "",
-                    data = result
-                };
-
+                    var apiresponse = new APIResponse<object>
+                    {
+                        IsError = false,
+                        Message = "",
+                        data = new
+                        {
+                            Id = department.Id,
+                            name = department.Name
+                        }
+                    };
+                    return Ok(apiresponse);
+                }
+                return BadRequest(ModelState);
             }
-            return new APIResponse<object>
-            {
-                IsError = false,
-                Message = ""
-            };
-        }
+            
+               
 
 
         // POST api/<ValuesController>
         [HttpPost]
-        public async Task Post([FromBody] DepartmentPostVM department)
+        public async Task<IActionResult> Post([FromBody] DepartmentPostVM department)
         {
+            if(!ModelState.IsValid) 
+            {
+                return BadRequest(ModelState);
+            }
+
             var departments = new Department
             {
                 Name = department.Name,
                
             };
-
             _repository.Add(departments);
             await _repository.SaveChanges();
+            return Ok(new APIResponse<object>
+            {
+                IsError = false,
+                Message = "",
+                data = new
+                {
+                    departments.Id, 
+                    departments.Name
+                }
+            });
         }
 
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
-        public async Task<APIResponse<object>> Put(int id, [FromBody] DepartmentPutVM departments)
+        public async Task<IActionResult> Put(int id, [FromBody] DepartmentPutVM departments)
         {
-            var department = await this._repository.Get(id).FirstOrDefaultAsync();
-
+            if (!ModelState.IsValid) {
+                return NotFound(ModelState);
+            }
+            var department = await this._repository.Get(id).SingleOrDefaultAsync();
             if (department!= null)
             {
                 
                 department.Name = departments.Name;
-                
-
                 this._repository.Update(department);
                 await this._repository.SaveChanges();
 
-                return new APIResponse<object>
+                return Ok(new APIResponse<object>
                 {
                     IsError = false,
                     Message = "",
-                    data = department
-                };
+                });
             }
-
-            return new APIResponse<object>
-            {
-                IsError = false,
-                Message = ""
-            };
+            return NotFound();
 
         }
 
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
-        public async Task<APIResponse<object>> Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var department = await this._repository.Get(id).FirstOrDefaultAsync();
+            var department = await this._repository.Get(id).SingleOrDefaultAsync();
             if (department != null)
             {
                 department.IsActive = false;
                 await this._repository.SaveChanges();
 
-                return new APIResponse<object>
+                return Ok(new APIResponse<object>
                 {
                     IsError = false,
                     Message = "",
-                    data = department
-                };
+                });
             }
-            return new APIResponse<object>
-            {
-                IsError = false,
-                Message = ""
-            };
+            return NotFound();
         }
 
     }
