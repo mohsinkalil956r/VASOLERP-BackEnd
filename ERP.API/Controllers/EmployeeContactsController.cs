@@ -1,4 +1,5 @@
-﻿using ERP.API.Models.EmployeeContacts;
+﻿using ERP.API.Models;
+using ERP.API.Models.EmployeeContacts;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
 using Microsoft.AspNetCore.Http;
@@ -20,10 +21,11 @@ namespace ERP.API.Controllers
         // GET: api/<ValuesController>
         [HttpGet]
         public async Task<IActionResult> Get()
+        public async Task<APIResponse<Object>> Get()
         {
             var employeeContacts = await this._repository.Get()
                 .Include(e => e.Employee).ToListAsync();
-
+           
             var result = employeeContacts.Select(e => new
             {
                 e.Id,
@@ -31,16 +33,25 @@ namespace ERP.API.Controllers
                 e.PhoneNumber,
                 e.Website,
                 e.Address,
-                Employee = new { e.Employee.Id, e.Employee.FristName, e.Employee.LastName }
+                Employee = new { e.Employee.Id, e.Employee.FirstName, e.Employee.LastName }
 
             }).ToList();
 
             return Ok(result);
+
+            return new APIResponse<object>
+            {
+                IsError = false,
+                Message = "",
+                data = result
+            };
+            
+            
         }
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<APIResponse<object>> Get(int id)
         {
             var employeeContact = await this._repository.Get(id).FirstOrDefaultAsync();
             if (employeeContact != null)
@@ -56,9 +67,19 @@ namespace ERP.API.Controllers
                 this._repository.Update(employeeContact);
                 await this._repository.SaveChanges();
 
-                return Ok( model);
+                return new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                    data = model
+                };
             }
-            return BadRequest();
+            return new APIResponse<object>
+            {
+                IsError = true,
+                Message = "",
+
+            };
 
         }
 
@@ -81,7 +102,7 @@ namespace ERP.API.Controllers
 
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] EmployeeContactPutVM model)
+        public async Task<APIResponse<object>> Put(int id, [FromBody] EmployeeContactPutVM model)
         {
             var employeeContact = await this._repository.Get(id).FirstOrDefaultAsync();
 
@@ -98,10 +119,18 @@ namespace ERP.API.Controllers
                 this._repository.Update(employeeContact);
                 await this._repository.SaveChanges();
 
-                return Ok();
+                return new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                };
             }
 
-            return NotFound();
+            return new APIResponse<object>
+            {
+                IsError = true,
+                Message = "",
+            };
 
         }
 
@@ -120,6 +149,27 @@ namespace ERP.API.Controllers
 
             return NotFound();
 
+        public async Task<APIResponse<object>> Delete(int id)
+        {
+            var employeeContact = await this._repository.Get(id).FirstOrDefaultAsync();
+
+            if (employeeContact != null)
+            {
+                employeeContact.IsActive = false;
+
+                return new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                };
+            }
+
+            return new APIResponse<object>
+            {
+                IsError = true,
+                Message = "",
+            };
         }
+
     }
 }

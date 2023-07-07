@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ERP.DAL.DB.Entities
 {
-    public class ProjectStatus : IBaseEntity
+    public class Status : IBaseEntity
     {
         public int Id { get; set; }
         public bool IsActive { get; set; } = true;

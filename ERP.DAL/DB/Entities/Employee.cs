@@ -10,7 +10,7 @@ namespace ERP.DAL.DB.Entities
     {
         public int Id { get; set; }
         public bool IsActive { get; set; } = true;
-        public string FristName { get; set; }
+        public string FirstName { get; set; }
         public string LastName { get; set; }
         public DateTime DOB { get; set; }
         public string CNIC { get; set; }
@@ -20,6 +20,6 @@ namespace ERP.DAL.DB.Entities
         public List<AssetIssuance> AssetIssuances { get; set; } = new();
         public List<Asset> Assets { get; set; } = new();
         public List<EmployeeContact> EmployeeContacts { get; set; } = new();
-
+       
     }
 }

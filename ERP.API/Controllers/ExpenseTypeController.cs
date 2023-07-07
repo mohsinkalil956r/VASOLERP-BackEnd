@@ -1,4 +1,5 @@
-﻿using ERP.API.Models.ExpenseType;
+﻿using ERP.API.Models;
+using ERP.API.Models.ExpenseType;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
 using Microsoft.AspNetCore.Http;
@@ -21,69 +22,99 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IEnumerable<object>> Get() {
-            return await this._repository.Get().ToListAsync();
-            //var expenseType = await this._repository.Get().Include(e => e.Expenses).ToListAsync();
-            //var result = expenseType.Select(s => new
-            //{
-            //    s.Id,
-            //    s.Name,
-            //    Expenses= s.Expenses.Select(ex => new {ex.Id,ex.ExpenseDate,ex.Description,ex.Amount})
-
-            //}).ToList();
-
-            //return result;
+        public async Task<IActionResult> Get() {
+            var expenseType = await this._repository.Get().ToListAsync();
+            return Ok(new APIResponse<object>
+            {
+                IsError = false,
+                Message = "",
+                data = expenseType.Select(x => new
+                {
+                    id = x.Id,
+                    Name = x.Name,
+                })
+            });
         }
 
         // GET api/<ValuesController>/5
-        [HttpGet("id")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id) {
             var expenseType = await this._repository.Get(id).FirstOrDefaultAsync();
             if(expenseType != null) {
-                return Ok(expenseType);
+                var apiResponse = new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                    data = new
+                    {
+                        Id = expenseType.Id,
+                        Name = expenseType.Name,
+                    }
+                };
+                return Ok(apiResponse);
             }
             return NotFound();
         }
 
-        // GET: api/<ValuesController>
+        // POST api/<ValuesController>
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] ExpenseTypePostVM model) {
+        public async Task<IActionResult> Post([FromBody] ExpenseTypePostVM model) 
+        {
+            if(!ModelState.IsValid) {
+                return BadRequest(ModelState);
+            }
             var expenseType = new ExpenseType
             {
                 Name = model.Name
             };
-            if (expenseType != null) {
-                _repository.Add(expenseType);
-                await _repository.SaveChanges();
-                return Ok();
-            }
-            return NotFound();
-            
+            _repository.Add(expenseType);
+            await _repository.SaveChanges();
+            return Ok(new APIResponse<object>
+            {
+                    IsError = false,
+                    Message = "",
+                    data = new
+                    {
+                        expenseType.Id,
+                        expenseType.Name,
+                    }
+            }) ;  
         }
 
         // PUT api/<ValuesController>/5
-        [HttpPut("id")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] ExpenseTypePutVM model) {
-            var expenseType = await this._repository.Get(id).FirstOrDefaultAsync();
+            if(!ModelState.IsValid) {
+                return NotFound(ModelState);
+            }
+            var expenseType = await this._repository.Get(id).SingleOrDefaultAsync();
             if(expenseType != null) {
                 expenseType.Name = model.Name;
 
                 this._repository.Update(expenseType);
                 await this._repository.SaveChanges();
-                return Ok();
+                return Ok(new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                });
             }
             return NotFound();
         }
 
         // DELETE api/<ValuesController>/5
-        [HttpDelete("id")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id) {
-            var expenseType = await this._repository.Get(id).FirstOrDefaultAsync();
+            var expenseType = await this._repository.Get(id).SingleOrDefaultAsync();
             if (expenseType != null)
             {
-                _repository.Delete(id);
+                expenseType.IsActive = false;
                 await this._repository.SaveChanges();
-                return Ok();
+                return Ok(new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                });
             }
             return NotFound();
         }

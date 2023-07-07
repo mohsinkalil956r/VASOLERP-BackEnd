@@ -1,51 +1,44 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ERP.API.Models.Projects;
+﻿using ERP.API.Models;
+using ERP.API.Models.Employees;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
-using ERP.API.Models.AssetType;
-using System.Runtime.CompilerServices;
-using ERP.API.Models;
-using ERP.API.Models.PaymentModes;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERP.API.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class PaymentModeController : ControllerBase
+    public class EmployeeController : ControllerBase
     {
-        private readonly IPaymentModeRepository _repository;
-        public PaymentModeController(IPaymentModeRepository repository)
+        private readonly IEmployeeRepository _repository;
+        public EmployeeController(IEmployeeRepository repository)
         {
             this._repository = repository;
         }
-
         // GET: api/<ValuesController>
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            //Done Refectoring
-            var paymentMode = await this._repository.Get().ToListAsync();
+            var employee = await this._repository.Get().ToListAsync();
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = paymentMode.Select(x => new
+                data = employee.Select(x => new
                 {
                     Id = x.Id,
-                    Name = x.Name,
+                    Name = x.FirstName,
+                    LastName = x.LastName,
+                    DOB = x.DOB,
+                    CNIC = x.CNIC,
                 })
             });
         }
-
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-            var paymentMode = await this._repository.Get(id).SingleOrDefaultAsync();
-            if (paymentMode != null)
+            var employee = await this._repository.Get(id).FirstOrDefaultAsync();
+            if (employee != null)
             {
                 var apiResponse = new APIResponse<Object>
                 {
@@ -53,8 +46,11 @@ namespace ERP.API.Controllers
                     Message = "",
                     data = new
                     {
-                        Id = paymentMode.Id,
-                        Name = paymentMode.Name,
+                        Id = employee.Id,
+                        Name = employee.FirstName,
+                        LastName = employee.LastName,
+                        DOB = employee.DOB,
+                        CNIC = employee.CNIC,
                     }
                 };
 
@@ -63,22 +59,24 @@ namespace ERP.API.Controllers
 
             return NotFound();
         }
-
         // POST api/<ValuesController>
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] PaymentModePostVM model)
+        public async Task<IActionResult> Post([FromBody] EmployeePostVM model)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var paymentMode = new PaymentMode
+            var employee = new Employee
             {
-                Name = model.Name,
+               FirstName = model.FirstName,
+               LastName = model.LastName,
+               DOB = model.DOB,
+               CNIC= model.CNIC,
             };
 
-            _repository.Add(paymentMode);
+            _repository.Add(employee);
             await _repository.SaveChanges();
 
             return Ok(new APIResponse<Object>
@@ -87,28 +85,32 @@ namespace ERP.API.Controllers
                 Message = "",
                 data = new
                 {
-                  
-                    paymentMode.Name,
+                    employee.Id,
+                    employee.FirstName,
+                     employee.LastName,
+                    employee.DOB,
+                    employee.CNIC,
                 }
             });
         }
-
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] PaymentModePostVM model)
+        public async Task<IActionResult> Put(int id, [FromBody]  EmployeePostVM model)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var paymentMode = await this._repository.Get(id).SingleOrDefaultAsync();
+            var employee = await this._repository.Get(id).SingleOrDefaultAsync();
 
-            if (paymentMode != null)
+            if (employee != null)
             {
-                paymentMode.Name = model.Name;
-
-                this._repository.Update(paymentMode);
+                employee.FirstName = model.FirstName;
+                 employee.LastName = model.LastName;
+                    employee.DOB = model.DOB;
+                    employee.CNIC = model.CNIC;
+                this._repository.Update(employee);
                 await this._repository.SaveChanges();
 
                 return Ok(new APIResponse<Object>
@@ -117,27 +119,32 @@ namespace ERP.API.Controllers
                     Message = "",
                 });
             }
-
             return NotFound();
 
         }
-
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var paymentMode = await this._repository.Get(id).SingleOrDefaultAsync();
-            if (paymentMode != null)
+            var employee = await this._repository.Get(id).SingleOrDefaultAsync();
+            if (employee != null)
             {
-                paymentMode.IsActive = false;
+                employee.IsActive = false;
                 return Ok(new APIResponse<Object>
                 {
                     IsError = false,
                     Message = "",
                 });
             }
-            await this._repository.SaveChanges();
             return NotFound();
         }
     }
 }
+
+
+
+
+
+
+
+

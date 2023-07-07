@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /ERP.API/appsettings.json
 /ERP.API/appsettings.Development.json
+/ERP.API/appsettings.json
