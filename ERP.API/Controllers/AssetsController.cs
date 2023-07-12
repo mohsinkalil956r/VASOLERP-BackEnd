@@ -60,6 +60,7 @@ namespace ERP.API.Controllers
                     Description = asset.Description,
                     PurchaseDate = asset.PurchaseDate,
                     PurchasePrice = asset.PurchasePrice,
+                    AssetTypeId = asset.AssetTypeId,
 
                 };
                 return new APIResponse<object>
