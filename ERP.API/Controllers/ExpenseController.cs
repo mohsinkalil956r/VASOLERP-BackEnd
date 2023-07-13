@@ -32,9 +32,9 @@ namespace ERP.API.Controllers
                 data = expense.Select(x=> new
                 {
                     id = x.Id,
-                    expensedate = x.ExpenseDate,
-                    description = x.Description,
-                    amount = x.Amount,
+                    ExpenseDate = x.ExpenseDate,
+                    Description = x.Description,
+                    Amount = x.Amount,
                     ExpenseType = new {x.ExpenseType.Id, x.ExpenseType.Name},
                     PaymentMode = new {x.PaymentMode.Id, x.PaymentMode.Name},
                  })
@@ -52,11 +52,11 @@ namespace ERP.API.Controllers
                     Message = "",
                     data = new
                     {
-                        expensedate = expense.ExpenseDate,
-                        description = expense.Description,
-                        amount = expense.Amount,
-                        expensetypeId = expense.ExpenseTypeId,
-                        paymentmodetypeid = expense.PaymentModeId
+                        ExpenseDate = expense.ExpenseDate,
+                        Description = expense.Description,
+                        Amount = expense.Amount,
+                        ExpenseTypeId = expense.ExpenseTypeId,
+                        PaymentModeId = expense.PaymentModeId
                     }
                 };
                 

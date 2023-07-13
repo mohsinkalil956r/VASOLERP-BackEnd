@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ERP.API.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class StatusController : ControllerBase
     {
         // GET: StatusController
