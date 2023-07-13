@@ -10,7 +10,7 @@ using System.Net;
 using ERP.API.Models.Client;
 
 namespace ERP.API.Controllers
-{ 
+{
 
     [Route("api/[controller]")]
     [ApiController]
@@ -22,7 +22,7 @@ namespace ERP.API.Controllers
             this._repository = repository;
         }
 
-        
+
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -60,7 +60,8 @@ namespace ERP.API.Controllers
                         PhoneNumber = clientcontact.PhoneNumber,
                         Address = clientcontact.Address,
                         Email = clientcontact.Email,
-                        Website = clientcontact.Website
+                        Website = clientcontact.Website,
+                        ClientId = clientcontact.ClientId,
                     }
                 };
                 return Ok(apiResponse);
@@ -71,7 +72,8 @@ namespace ERP.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] ClientContactPostVM clientcontacts)
         {
-            if(!ModelState.IsValid) {
+            if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
             }
             var clientContact = new ClientContact
@@ -112,7 +114,7 @@ namespace ERP.API.Controllers
 
             if (clientContact != null)
             {
-                clientContact.ClientId = clientcontacts.ClientId; 
+                clientContact.ClientId = clientcontacts.ClientId;
                 clientContact.PhoneNumber = clientcontacts.PhoneNumber;
                 clientContact.Address = clientcontacts.Address;
                 clientContact.Email = clientcontacts.Email;
@@ -131,20 +133,20 @@ namespace ERP.API.Controllers
             return NotFound();
         }
 
-        
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
-            {
+        {
             var clientContact = await this._repository.Get(id).SingleOrDefaultAsync();
             if (clientContact != null)
             {
                 clientContact.IsActive = false;
                 await this._repository.SaveChanges();
                 return Ok(new APIResponse<object>
-                    {
-                        IsError = false,
-                        Message = "",
-                    });
+                {
+                    IsError = false,
+                    Message = "",
+                });
             }
             return NotFound();
         }
