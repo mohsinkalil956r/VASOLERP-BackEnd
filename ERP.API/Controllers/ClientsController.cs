@@ -12,10 +12,10 @@ namespace ERP.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ClientController : ControllerBase
+    public class ClientsController : ControllerBase
     {
         private readonly IClientsRepository _repository;
-        public ClientController(IClientsRepository repository)
+        public ClientsController(IClientsRepository repository)
         {
             this._repository = repository;
         }
@@ -34,7 +34,7 @@ namespace ERP.API.Controllers
             {
                 p.Id,
                 p.Name,
-                Projects = p.Projects.Select(e => new { e.Id, e.Name, e.StartDate,e.DeadLine,e.Status }),
+                Projects = p.Projects.Select(e => new { e.Id, e.Name, e.StartDate,e.DeadLine, }),
                   ClientContacts = p.ClientContacts.Select(e => new { e.Id, e.Email, e.PhoneNumber, e.Website,e.Address })
             } ).ToList();
             return new APIResponse<object>
