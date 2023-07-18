@@ -1,54 +1,139 @@
-﻿using ERP.DAL.DB.Entities;
-using ERP.DAL.Repositories.Abstraction;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ERP.API.Models.Projects;
+using ERP.DAL.DB.Entities;
+using ERP.DAL.Repositories.Abstraction;
+using ERP.API.Models;
+using ERP.API.Models.StatusVM;
+
+// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace ERP.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class StatusController : ControllerBase
+    public class StatusesController : ControllerBase
     {
-        // GET: StatusController
-        private readonly IStatusRepository _StatusRepository;
-        public StatusController(IStatusRepository StatusRepository)
+        private readonly IStatusRepository _repository;
+        public StatusesController(IStatusRepository repository)
         {
-            this._StatusRepository = StatusRepository;
+            this._repository = repository;
         }
 
-        // Get All Statuss <StatusController>
+        // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IEnumerable<Status>> Get()
+        public async Task<IActionResult> Get()
         {
-            return await this._StatusRepository.Get().ToListAsync();
+            var status = await this._repository.Get().ToListAsync();
+            return Ok(new APIResponse<object>
+            {
+                IsError = false,
+                Message = "",
+                data = status.Select(x => new
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                })
+            });
         }
-        // Get Status by Id<StatusController>
 
+        // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        public async Task<Status> Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            return await _StatusRepository.Get(id).FirstOrDefaultAsync();
+            var status = await this._repository.Get(id).FirstOrDefaultAsync();
+            if (status != null)
+            {
+                var apiResponse = new APIResponse<Object>
+                {
+                    IsError = false,
+                    Message = "",
+                    data = new
+                    {
+                        Id = status.Id,
+                        Name = status.Name,
+                    }
+                };
+
+                return Ok(apiResponse);
+            }
+
+            return NotFound();
         }
 
-        // Add new Status<StatusController>
+        // POST api/<ValuesController>
         [HttpPost]
-        public void Post([FromBody] string name)
+        public async Task<IActionResult> Post([FromBody] ProjectStatusGetVM model)
         {
-            this._StatusRepository.Add(new Status { Name = name });
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var status = new Status
+            {
+                Name = model.Name,
+            };
+
+            _repository.Add(status);
+            await _repository.SaveChanges();
+
+            return Ok(new APIResponse<Object>
+            {
+                IsError = false,
+                Message = "",
+                data = new
+                {
+                    status.Id,
+                    status.Name,
+                }
+            });
         }
 
-        // UPDATE/PUT Status by Id<StatusController>
+        // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public async Task<IActionResult> Put(int id, [FromBody] ProjectPutVM model)
         {
-            this._StatusRepository.Update(new Status { Id = id, Name = value });
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var status = await this._repository.Get(id).SingleOrDefaultAsync();
+
+            if (status != null)
+            {
+                status.Name = model.Name;
+
+                this._repository.Update(status);
+                await this._repository.SaveChanges();
+
+                return Ok(new APIResponse<Object>
+                {
+                    IsError = false,
+                    Message = "",
+                });
+            }
+
+            return NotFound();
+
         }
 
-        // DELETE Status using Id <StatusController>
+        // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            this._StatusRepository.Delete(id);
+            var status = await this._repository.Get(id).SingleOrDefaultAsync();
+            if (status != null)
+            {
+                status.IsActive = false;
+                return Ok(new APIResponse<Object>
+                {
+                    IsError = false,
+                    Message = "",
+                });
+            }
+            return NotFound();
         }
     }
 }

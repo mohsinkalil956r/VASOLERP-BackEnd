@@ -1,6 +1,6 @@
 ﻿namespace ERP.API.Models.StatusVM
 {
-    public class ProjectStatusGetVM
+    public class ProjectStatusGetVM:ProjectStatusPostVM
     {
     }
 }
