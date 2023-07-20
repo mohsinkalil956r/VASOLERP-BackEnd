@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
+using ERP.API.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -21,12 +22,10 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IEnumerable<Object>> Get()
+        public async Task<IActionResult> Get()
         {
             var projects = await this._repository.Get()
-                .Include(p => p.Client)
-                .Include(p => p.Status)
-                .Include(p => p.Employees)
+                
                 .ToListAsync();
 
             var result = projects.Select(p => new
@@ -35,33 +34,40 @@ namespace ERP.API.Controllers
                 p.Name,
                 p.Description,
                 p.StartDate,
-                p.DeadLine,
-                Status = new { p.Status.Id, p.Status.Name },
-                Client = new { p.Client.Id, p.Client.Name },
+                p.DeadLine,  
                 p.Budget,
-                Employees =  p.Employees.Select(e => new { e.Id, e.FirstName, e.LastName })
+               }).ToList();
 
-            }).ToList();
-
-            return result;
+            return Ok(new APIResponse<Object>
+            {
+                IsError = false,
+                Message = "",
+                data = result,
+            });
         }
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-            var expense = await this._repository.Get(id).FirstOrDefaultAsync();
-            if (expense != null)
+            var project = await this._repository.Get(id).FirstOrDefaultAsync();
+            if (project != null)
             {
-                return Ok(expense);
+                return Ok(new APIResponse<Object>
+                {
+                    IsError = false,
+                    Message = "",
+                    data = project,
+                });
             }
             return NotFound();
         }
 
         // POST api/<ValuesController>
         [HttpPost]
-        public async Task Post([FromBody] ProjectPostVM model)
+        public async Task<IActionResult> Post([FromBody] ProjectPostVM model)
         {
+            if (ModelState.IsValid) { 
             var project = new Project
             {
                 Budget = model.Budget,
@@ -75,6 +81,17 @@ namespace ERP.API.Controllers
 
             _repository.Add(project);
             await _repository.SaveChanges();
+                return Ok(new APIResponse<Object>
+                {
+                    IsError = false,
+                    Message = "",
+                    data = project,
+                });
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         // PUT api/<ValuesController>/5
@@ -96,8 +113,12 @@ namespace ERP.API.Controllers
 
                 this._repository.Update(project);
                 await this._repository.SaveChanges();
-
-                return Ok();
+                return Ok(new APIResponse<Object>
+                {
+                    IsError = false,
+                    Message = "",
+                    data = project,
+                });
             }
 
             return NotFound();
@@ -106,13 +127,23 @@ namespace ERP.API.Controllers
 
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
-        public async Task Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             var project = await this._repository.Get(id).Include(p => p.ProjectEmployees).FirstOrDefaultAsync();
             if (project != null)
             {
                 project.IsActive = false;
                 await this._repository.SaveChanges();
+                return Ok(new APIResponse<Object>
+                {
+                    IsError = false,
+                    Message = "",
+                    data = project,
+                });
+            }
+            else
+            {
+               return NotFound();
             }
         }
     }
