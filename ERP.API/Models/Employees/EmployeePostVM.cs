@@ -8,5 +8,8 @@
         public DateTime DOB { get; set; }
         public string CNIC { get; set; }
         public double Salary { get; set; }
+
+        public List<EmployeeContacts.EmployeeContactPostVM> Contacts { get; set; }
+
     }
 }

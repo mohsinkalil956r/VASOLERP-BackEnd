@@ -69,7 +69,7 @@ namespace ERP.API.Controllers
         }
         // POST api/<ValuesController>
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] EmployeePostVM model, EmployeeContactPostVM contactPostVM)
+        public async Task<IActionResult> Post([FromBody] EmployeePostVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -83,16 +83,7 @@ namespace ERP.API.Controllers
                 Salary = model.Salary,
                 DOB = model.DOB,
                 CNIC = model.CNIC,
-                EmployeeContacts = new List<EmployeeContact> // Initialize the EmployeeContacts collection
-        {
-            new EmployeeContact
-            {
-                PhoneNumber = contactPostVM.PhoneNumber,
-                Email = contactPostVM.Email,
-                Website = contactPostVM.Website,
-                Address = contactPostVM.Address,
-            }
-        }
+                EmployeeContacts = model.Contacts.Select(x => new EmployeeContact { Address = x.Address ,Website=x.Website,PhoneNumber=x.PhoneNumber,Email=x.Email}).ToList() // Initialize the EmployeeContacts collection
             };
 
             _repository.Add(employee);
