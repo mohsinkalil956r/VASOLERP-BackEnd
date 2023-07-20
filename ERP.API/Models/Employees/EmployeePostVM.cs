@@ -7,5 +7,6 @@
         public string LastName { get; set; }
         public DateTime DOB { get; set; }
         public string CNIC { get; set; }
+        public double Salary { get; set; }
     }
 }

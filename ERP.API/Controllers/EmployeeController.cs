@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ERP.API.Controllers
 {
-    public class EmployeeController : ControllerBase
+    public class EmployeesController : ControllerBase
     {
         private readonly IEmployeeRepository _repository;
-        public EmployeeController(IEmployeeRepository repository)
+        public EmployeesController(IEmployeeRepository repository)
         {
             this._repository = repository;
         }
@@ -25,11 +25,12 @@ namespace ERP.API.Controllers
                 Message = "",
                 data = employee.Select(x => new
                 {
-                    Id = x.Id,
-                    Name = x.FirstName,
-                    LastName = x.LastName,
-                    DOB = x.DOB,
-                    CNIC = x.CNIC,
+                     x.Id,
+                      x.FirstName,
+                     x.LastName,
+                     x.Salary,
+                     x.DOB,
+                     x.CNIC,
                 })
             });
         }
@@ -46,11 +47,12 @@ namespace ERP.API.Controllers
                     Message = "",
                     data = new
                     {
-                        Id = employee.Id,
-                        Name = employee.FirstName,
-                        LastName = employee.LastName,
-                        DOB = employee.DOB,
-                        CNIC = employee.CNIC,
+                         employee.Id,
+                         employee.FirstName,
+                        employee.LastName,
+                        employee.Salary,
+                        employee.DOB,
+                        employee.CNIC,
                     }
                 };
 
@@ -72,6 +74,7 @@ namespace ERP.API.Controllers
             {
                FirstName = model.FirstName,
                LastName = model.LastName,
+               Salary =model.Salary,
                DOB = model.DOB,
                CNIC= model.CNIC,
             };
@@ -87,7 +90,8 @@ namespace ERP.API.Controllers
                 {
                     employee.Id,
                     employee.FirstName,
-                     employee.LastName,
+                    employee.LastName,
+                    employee.Salary,
                     employee.DOB,
                     employee.CNIC,
                 }
@@ -108,6 +112,7 @@ namespace ERP.API.Controllers
             {
                 employee.FirstName = model.FirstName;
                  employee.LastName = model.LastName;
+                employee.Salary = model.Salary;
                     employee.DOB = model.DOB;
                     employee.CNIC = model.CNIC;
                 this._repository.Update(employee);
