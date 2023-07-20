@@ -1,4 +1,5 @@
 ﻿using ERP.API.Models;
+using ERP.API.Models.EmployeeContacts;
 using ERP.API.Models.Employees;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
@@ -63,7 +64,7 @@ namespace ERP.API.Controllers
         }
         // POST api/<ValuesController>
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] EmployeePostVM model)
+        public async Task<IActionResult> Post([FromBody] EmployeePostVM model,EmployeeContactPostVM contactPostVM)
         {
             if (!ModelState.IsValid)
             {
@@ -72,11 +73,21 @@ namespace ERP.API.Controllers
 
             var employee = new Employee
             {
-               FirstName = model.FirstName,
-               LastName = model.LastName,
-               Salary =model.Salary,
-               DOB = model.DOB,
-               CNIC= model.CNIC,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Salary = model.Salary,
+                DOB = model.DOB,
+                CNIC = model.CNIC,
+                EmployeeContacts = new List<EmployeeContact> // Initialize the EmployeeContacts collection
+        {
+            new EmployeeContact
+            {
+                PhoneNumber = contactPostVM.PhoneNumber,
+                Email = contactPostVM.Email,
+                Website = contactPostVM.Website,
+                Address = contactPostVM.Address,
+            }
+        }
             };
 
             _repository.Add(employee);
