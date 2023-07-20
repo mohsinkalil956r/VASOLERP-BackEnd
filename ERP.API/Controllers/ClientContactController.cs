@@ -8,6 +8,7 @@ using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
 using System.Net;
 using ERP.API.Models.Client;
+using System.Diagnostics.Metrics;
 
 namespace ERP.API.Controllers
 {
@@ -39,6 +40,7 @@ namespace ERP.API.Controllers
                     Email = x.Email,
                     Address = x.Address,
                     Website = x.Website,
+                    Country = x.Country,
                     ClientId = x.ClientId,
                 })
             });
@@ -62,6 +64,7 @@ namespace ERP.API.Controllers
                         Email = clientcontact.Email,
                         Website = clientcontact.Website,
                         ClientId = clientcontact.ClientId,
+                        Country = clientcontact.Country
                     }
                 };
                 return Ok(apiResponse);
@@ -83,6 +86,7 @@ namespace ERP.API.Controllers
                 Address = clientcontacts.Address,
                 Email = clientcontacts.Email,
                 Website = clientcontacts.Website,
+                Country = clientcontacts.Country
             };
 
             _repository.Add(clientContact);
@@ -98,6 +102,7 @@ namespace ERP.API.Controllers
                     clientcontacts.Address,
                     clientcontacts.Email,
                     clientcontacts.Website,
+                    clientcontacts.Country
                 }
             });
         }
@@ -119,6 +124,7 @@ namespace ERP.API.Controllers
                 clientContact.Address = clientcontacts.Address;
                 clientContact.Email = clientcontacts.Email;
                 clientContact.Website = clientcontacts.Website;
+                clientContact.Country = clientcontacts.Country;
 
                 this._repository.Update(clientContact);
                 await this._repository.SaveChanges();

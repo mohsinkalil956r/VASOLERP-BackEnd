@@ -35,7 +35,7 @@ namespace ERP.API.Controllers
                 p.Id,
                 p.Name,
                 Projects = p.Projects.Select(e => new { e.Id, e.Name, e.StartDate,e.DeadLine, }),
-                  ClientContacts = p.ClientContacts.Select(e => new { e.Id, e.Email, e.PhoneNumber, e.Website,e.Address })
+                  ClientContacts = p.ClientContacts.Select(e => new { e.Id, e.Email, e.PhoneNumber, e.Website,e.Address, e.Country })
             } ).ToList();
             return new APIResponse<object>
             {
