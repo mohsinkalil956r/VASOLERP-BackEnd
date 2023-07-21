@@ -24,7 +24,7 @@ namespace ERP.API.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var employee = await this._repository.Get().ToListAsync();
+            var employee = await this._repository.Get().Include(p => p.EmployeeContacts).ToListAsync();
             return Ok(new APIResponse<object>
             {
                 IsError = false,
@@ -37,6 +37,8 @@ namespace ERP.API.Controllers
                     x.Salary,
                     x.DOB,
                     x.CNIC,
+                    EmployeeContact = x.EmployeeContacts.Select(e => new { e.Id, e.Address, e.Website,e.PhoneNumber,e.Email })
+
                 })
             });
         }
@@ -44,7 +46,7 @@ namespace ERP.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-            var employee = await this._repository.Get(id).FirstOrDefaultAsync();
+            var employee = await this._repository.Get(id).Include(p=>p.EmployeeContacts).FirstOrDefaultAsync();
             if (employee != null)
             {
                 var apiResponse = new APIResponse<Object>
@@ -59,7 +61,8 @@ namespace ERP.API.Controllers
                         employee.Salary,
                         employee.DOB,
                         employee.CNIC,
-                    }
+                       employee.EmployeeContacts,
+                     }
                 };
 
                 return Ok(apiResponse);
@@ -106,14 +109,14 @@ namespace ERP.API.Controllers
         }
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] EmployeePostVM model)
+        public async Task<IActionResult> Put(int id, [FromBody] EmployeePutVM model)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var employee = await this._repository.Get(id).SingleOrDefaultAsync();
+            var employee = await this._repository.Get(id).Include(e=>e.EmployeeContacts).SingleOrDefaultAsync();
 
             if (employee != null)
             {
@@ -122,6 +125,22 @@ namespace ERP.API.Controllers
                 employee.Salary = model.Salary;
                 employee.DOB = model.DOB;
                 employee.CNIC = model.CNIC;
+
+                var contactIds = model.Contacts.Select(x => x.Id).ToList();
+
+
+
+                employee.EmployeeContacts.Where(x => contactIds.Contains(x.Id)).ToList().ForEach(contact =>
+                {
+                    var modelContact = model.Contacts.Where(x => x.Id == contact.Id).First();
+                    contact.PhoneNumber = modelContact.PhoneNumber;
+                    contact.Email = modelContact.Email;
+                    contact.Address = modelContact.Address;
+                    contact.Website = modelContact.Website;
+                });
+              
+               
+
                 this._repository.Update(employee);
                 await this._repository.SaveChanges();
 
