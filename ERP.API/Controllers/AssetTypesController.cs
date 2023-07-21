@@ -128,6 +128,7 @@ namespace ERP.API.Controllers
             if (assetType != null)
             {
                 assetType.IsActive = false;
+                await this._repository.SaveChanges();
                 return Ok(new APIResponse<Object>
                 {
                     IsError = false,

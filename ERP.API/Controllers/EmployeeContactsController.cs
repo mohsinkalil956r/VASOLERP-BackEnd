@@ -5,7 +5,7 @@ using ERP.DAL.Repositories.Abstraction;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+///////////////////////////////////////////////////////////////////////
 namespace ERP.API.Controllers
 {
     [Route("api/[controller]")]
@@ -21,72 +21,67 @@ namespace ERP.API.Controllers
         // GET: api/<ValuesController>
         [HttpGet]
         public async Task<IActionResult> Get()
-        public async Task<APIResponse<Object>> Get()
         {
             var employeeContacts = await this._repository.Get()
                 .Include(e => e.Employee).ToListAsync();
-           
-            var result = employeeContacts.Select(e => new
-            {
-                e.Id,
-                e.Email,
-                e.PhoneNumber,
-                e.Website,
-                e.Address,
-                Employee = new { e.Employee.Id, e.Employee.FirstName, e.Employee.LastName }
 
-            }).ToList();
-
-            return Ok(result);
-
-            return new APIResponse<object>
+            return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = result
-            };
-            
-            
+                data = employeeContacts.Select(x => new
+                {
+                    Id = x.Id,
+                    Email = x.Email,
+                    PhoneNumber = x.PhoneNumber,
+                    Website = x.Website,
+                    Address = x.Address,
+
+                })
+            }
+                    );
         }
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        public async Task<APIResponse<object>> Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            var employeeContact = await this._repository.Get(id).FirstOrDefaultAsync();
+            var employeeContact = await this._repository.Get(id).SingleOrDefaultAsync();
             if (employeeContact != null)
             {
-                var model = new EmployeeContactGetVM
-                {
-                    Email = employeeContact.Email,
-                    Website = employeeContact.Website,
-                    Address = employeeContact.Address,
-                    PhoneNumber = employeeContact.PhoneNumber,
 
-                };
-                this._repository.Update(employeeContact);
-                await this._repository.SaveChanges();
-
-                return new APIResponse<object>
+                var apiResponse = new APIResponse<object>
                 {
                     IsError = false,
                     Message = "",
-                    data = model
+                    data = new
+                    {
+                        Email = employeeContact.Email,
+                        Website = employeeContact.Website,
+                        Address = employeeContact.Address,
+                        PhoneNumber = employeeContact.PhoneNumber,
+                        EmployeeId = employeeContact.Id
+                    }
                 };
-            }
-            return new APIResponse<object>
-            {
-                IsError = true,
-                Message = "",
 
-            };
+                this._repository.Update(employeeContact);
+                await this._repository.SaveChanges();
+
+                return Ok(apiResponse);
+            }
+            return NotFound();
 
         }
 
         // POST api/<ValuesController>
         [HttpPost]
-        public async Task Post([FromBody] EmployeeContactPostVM model)
+        public async Task<IActionResult> Post([FromBody] EmployeeContactPostVM model)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var employeeContact = new EmployeeContact
             {
                 Email = model.Email,
@@ -98,18 +93,38 @@ namespace ERP.API.Controllers
 
             _repository.Add(employeeContact);
             await _repository.SaveChanges();
+
+            return Ok(new APIResponse<object>
+            {
+                IsError = false,
+                Message = "",
+                data = new
+                {
+                    employeeContact.Id,
+                    employeeContact.Email,
+                    employeeContact.PhoneNumber,
+                    employeeContact.Website,
+                    employeeContact.Address,
+                    employeeContact.EmployeeId
+                }
+            }
+                    );
         }
 
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
-        public async Task<APIResponse<object>> Put(int id, [FromBody] EmployeeContactPutVM model)
+        public async Task<IActionResult> Put(int id, [FromBody] EmployeeContactPutVM model)
         {
-            var employeeContact = await this._repository.Get(id).FirstOrDefaultAsync();
+            var employeeContact = await this._repository.Get(id).SingleOrDefaultAsync();
 
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
             if (employeeContact != null)
             {
-                
+
                 employeeContact.Email = model.Email;
                 employeeContact.PhoneNumber = model.PhoneNumber;
                 employeeContact.Website = model.Website;
@@ -119,18 +134,14 @@ namespace ERP.API.Controllers
                 this._repository.Update(employeeContact);
                 await this._repository.SaveChanges();
 
-                return new APIResponse<object>
+                return Ok(new APIResponse<object>
                 {
                     IsError = false,
-                    Message = "",
-                };
+                    Message = ""
+                });
             }
 
-            return new APIResponse<object>
-            {
-                IsError = true,
-                Message = "",
-            };
+            return NotFound();
 
         }
 
@@ -138,38 +149,23 @@ namespace ERP.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var employeeContact = await this._repository.Get(id).FirstOrDefaultAsync();
-
-            if (employeeContact != null) 
-            {
-                employeeContact.IsActive = false;
-
-                return Ok();
-            }
-
-            return NotFound();
-
-        public async Task<APIResponse<object>> Delete(int id)
-        {
-            var employeeContact = await this._repository.Get(id).FirstOrDefaultAsync();
-
+            var employeeContact = await this._repository.Get(id).SingleOrDefaultAsync();
             if (employeeContact != null)
             {
                 employeeContact.IsActive = false;
 
-                return new APIResponse<object>
+                this._repository.Update(employeeContact);
+                await this._repository.SaveChanges();
+
+                return Ok(new APIResponse<object>
                 {
                     IsError = false,
                     Message = "",
-                };
+                });
             }
 
-            return new APIResponse<object>
-            {
-                IsError = true,
-                Message = "",
-            };
-        }
+            return NotFound();
 
+        }
     }
 }
