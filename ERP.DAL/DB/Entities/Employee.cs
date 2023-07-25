@@ -20,7 +20,8 @@ namespace ERP.DAL.DB.Entities
         public List<ProjectEmployee> ProjectEmployees { get; set; } = new();
         public List<AssetIssuance> AssetIssuances { get; set; } = new();
         public List<Asset> Assets { get; set; } = new();
-        public List<EmployeeContact> EmployeeContacts { get; set; } = new();
-       
+        public virtual ICollection<EmployeeContact> EmployeeContacts { get; set; }
+
+
     }
 }

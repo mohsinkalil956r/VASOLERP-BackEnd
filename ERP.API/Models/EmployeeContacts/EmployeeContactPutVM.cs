@@ -2,5 +2,6 @@
 {
     public class EmployeeContactPutVM : EmployeeContactPostVM
     {
+        public int Id { get; set; }
     }
 }

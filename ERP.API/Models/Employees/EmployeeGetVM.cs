@@ -1,7 +1,10 @@
-﻿namespace ERP.API.Models.Employees
+﻿using ERP.DAL.DB.Entities;
+
+namespace ERP.API.Models.Employees
 {
     public class EmployeeGetVM : EmployeePostVM
     {
-        public string FirstName { get; internal set; }
+        public virtual ICollection<EmployeeContact> EmployeeContacts { get; set; }
+
     }
 }
