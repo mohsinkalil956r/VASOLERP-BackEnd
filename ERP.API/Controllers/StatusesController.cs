@@ -1,21 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ERP.API.Models.Projects;
+﻿using ERP.API.Models.Projects;
+using ERP.API.Models.StatusesVM;
+using ERP.API.Models;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
-using ERP.API.Models;
-using ERP.API.Models.StatusVM;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace ERP.API.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
     public class StatusesController : ControllerBase
     {
-        private readonly IStatusRepository _repository;
-        public StatusesController(IStatusRepository repository)
+        private readonly IStatusesRepository _repository;
+        public StatusesController(IStatusesRepository repository)
         {
             this._repository = repository;
         }
@@ -33,6 +33,9 @@ namespace ERP.API.Controllers
                 {
                     Id = x.Id,
                     Name = x.Name,
+                    IsProgress = x.IsProgress,
+                    Progress = x.Progress,
+
                 })
             });
         }
@@ -52,6 +55,8 @@ namespace ERP.API.Controllers
                     {
                         Id = status.Id,
                         Name = status.Name,
+                        IsProgress = status.IsProgress,
+                        Progress = status.Progress,
                     }
                 };
 
@@ -63,16 +68,18 @@ namespace ERP.API.Controllers
 
         // POST api/<ValuesController>
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] ProjectStatusGetVM model)
+        public async Task<IActionResult> Post([FromBody] ProjectStatusesPostVM model)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var status = new Status
+            var status = new Statuses
             {
                 Name = model.Name,
+                IsProgress = model.IsProgress,
+                Progress = model.Progress,
             };
 
             _repository.Add(status);
@@ -86,13 +93,15 @@ namespace ERP.API.Controllers
                 {
                     status.Id,
                     status.Name,
+                    status.IsProgress,
+                    status.Progress
                 }
             });
         }
 
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] ProjectPutVM model)
+        public async Task<IActionResult> Put(int id, [FromBody] ProjectStatusesPutVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -104,6 +113,8 @@ namespace ERP.API.Controllers
             if (status != null)
             {
                 status.Name = model.Name;
+                status.IsProgress = model.IsProgress;
+                status.Progress = model.Progress;
 
                 this._repository.Update(status);
                 await this._repository.SaveChanges();
@@ -127,6 +138,7 @@ namespace ERP.API.Controllers
             if (status != null)
             {
                 status.IsActive = false;
+                await this._repository.SaveChanges();
                 return Ok(new APIResponse<Object>
                 {
                     IsError = false,

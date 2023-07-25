@@ -9,12 +9,14 @@ using System.Threading.Tasks;
 
 namespace ERP.DAL.Repositories
 {
-    public class StatusRepository: BaseRepository<Status>, IStatusRepository
+    public class StatusesRepository: BaseRepository<Statuses>, IStatusesRepository
     {
-        public StatusRepository(ERPContext context) : base(context)
+        public StatusesRepository(ERPContext context) : base(context)
         {
 
         }
     
     }
+
+   
 }

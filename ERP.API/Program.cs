@@ -89,7 +89,8 @@ public class Program
         builder.Services.AddTransient<IExpenseRepository, ExpenseRepository>();
         builder.Services.AddTransient<IEmployeeRepository, EmployeeRepository>();
         builder.Services.AddTransient<IDepartmentRepository, DepartmentRepository>();
-        builder.Services.AddTransient<IStatusRepository, StatusRepository>();
+        builder.Services.AddTransient<IStatusesRepository, StatusesRepository>();
+
         builder.Services.AddAutoMapper(typeof(MapperProfile));
 
         builder.Services.AddControllers();
