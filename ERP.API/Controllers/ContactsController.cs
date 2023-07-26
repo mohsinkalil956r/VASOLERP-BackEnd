@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Threading.Tasks.Dataflow;
 
 namespace ERP.API.Controllers
 {
@@ -23,7 +24,6 @@ namespace ERP.API.Controllers
         }
 
 
-
         // GET: api/<ValuesController>
         [HttpGet]
         public async Task<IActionResult> Get()
@@ -31,26 +31,30 @@ namespace ERP.API.Controllers
             var employeeContacts = await this._employeeContact.Get()
                 .Include(e => e.Employee)
                 .Select(c => new { Type = "Employee",
-                 FirstName = c.Employee.FirstName,
-                 LastName = c.Employee.LastName })
+                EmployeeId = c.EmployeeId,
+                FirstName = c.Employee.FirstName,
+                LastName = c.Employee.LastName,
+                })
                 .ToListAsync();
 
             var clientContacts = await this._clientContact.Get()
                 .Include(e => e.Client)
                 .Select(c => new { Type = "Client",
-                 Name = c.Client.Name })
+                ClientId = c.ClientId,
+                Name = c.Client.Name })
                 .ToListAsync();
+
+            //List<string> concatinated = employeeContacts.Concat(clientContacts).ToList();
 
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = employeeContacts.Concat(clientContacts)
-                
-            }
+                data = new List<object>().Concat(employeeContacts).Concat(clientContacts).ToList()
+
+        }
                      );
         }
-
 
 
     }
