@@ -42,6 +42,7 @@ namespace ERP.API.Controllers
                     x.ContractDate,
                     EmployeeContact = x.EmployeeContacts.Select(e => new { e.Id, e.Address, e.Website, e.PhoneNumber, e.Email }),
                     Department = new { x.Department.Id, x.Department.Name },
+                    x.IsActive,
                 })
             }) ;
         }
@@ -67,6 +68,7 @@ namespace ERP.API.Controllers
                         employee.ContractDate,
                        employee.EmployeeContacts,
                        employee.Department,
+                       employee.IsActive,
                      }
                 };
 
