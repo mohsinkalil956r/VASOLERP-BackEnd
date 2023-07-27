@@ -23,25 +23,46 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<APIResponse<object>> Get()
+        public async Task<APIResponse<object>> Get(string searchValue, int pageNumber = 1, int pageSize = 10)
         {
-            var clients = await this._repository.Get()
-                .Include(p=> p.Projects)
-                .Include(p=>p.ClientContacts)
-                .ToListAsync();
+            var query = this._repository.Get()
+                .Include(p => p.Projects)
+                .Include(p => p.ClientContacts);
 
-            var result= clients.Select(p =>new
+            // Apply search filter if searchValue is provided
+            if (!string.IsNullOrEmpty(searchValue))
+            {
+                query = (Microsoft.EntityFrameworkCore.Query.IIncludableQueryable<Client, List<ClientContact>>)query.Where(p => p.Name.Contains(searchValue));
+            }
+
+            // Get the total count of items without pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            query = (Microsoft.EntityFrameworkCore.Query.IIncludableQueryable<Client, List<ClientContact>>)query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+
+            var clients = await query.ToListAsync();
+
+            var result = clients.Select(p => new
             {
                 p.Id,
                 p.Name,
-                Projects = p.Projects.Select(e => new { e.Id, e.Name, e.StartDate,e.DeadLine, }),
-                  ClientContacts = p.ClientContacts.Select(e => new { e.Id, e.Email, e.PhoneNumber, e.Website,e.Address, e.Country })
-            } ).ToList();
+                Projects = p.Projects.Select(e => new { e.Id, e.Name, e.StartDate, e.DeadLine }),
+                ClientContacts = p.ClientContacts.Select(e => new { e.Id, e.Email, e.PhoneNumber, e.Website, e.Address, e.Country })
+            }).ToList();
+
             return new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = result
+                data = new
+                {
+                    TotalCount = totalCount,
+                    PageSize = pageSize,
+                    CurrentPage = pageNumber,
+                    SearchValue = searchValue,
+                    Results = result
+                }
             };
         }
 
