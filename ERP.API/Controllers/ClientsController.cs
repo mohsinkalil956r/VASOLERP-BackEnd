@@ -32,14 +32,14 @@ namespace ERP.API.Controllers
             // Apply search filter if searchValue is provided
             if (!string.IsNullOrEmpty(searchValue))
             {
-                query = (Microsoft.EntityFrameworkCore.Query.IIncludableQueryable<Client, List<ClientContact>>)query.Where(p => p.Name.Contains(searchValue));
+                query = query.Where(p => p.Name.Contains(searchValue));
             }
 
             // Get the total count of items without pagination
             var totalCount = await query.CountAsync();
 
             // Apply pagination
-            query = (Microsoft.EntityFrameworkCore.Query.IIncludableQueryable<Client, List<ClientContact>>)query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
 
             var clients = await query.ToListAsync();
 
@@ -55,7 +55,7 @@ namespace ERP.API.Controllers
             {
                 IsError = false,
                 Message = "",
-                data = new
+                Data = new
                 {
                     TotalCount = totalCount,
                     PageSize = pageSize,
