@@ -12,5 +12,7 @@ namespace ERP.DAL.DB.Entities
         public bool IsActive { get; set; } = true;
         public string Name { get; set; }
 
+        public List<Employee> Employees { get; set; } = new();
+
     }
 }

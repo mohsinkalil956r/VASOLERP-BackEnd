@@ -16,6 +16,12 @@ namespace ERP.DAL.DB.Entities
         public string CNIC { get; set; }
 
         public double Salary { get; set; }
+
+        public int DepartmentId { get; set; }
+
+        public DateTime ContractDate { get; set; }  
+
+        public Department Department { get; set; }
         public List<Project> Projects { get; set; } = new();
         public List<ProjectEmployee> ProjectEmployees { get; set; } = new();
         public List<AssetIssuance> AssetIssuances { get; set; } = new();
