@@ -34,7 +34,8 @@ namespace ERP.API.Controllers
                 data = client.Select(x => new
                 {
                     x.Id,
-                    x.Name,
+                    x.FirstName,
+                    x.LastName,
                     ClientContacts = x.ClientContacts.Select(e => new { e.Id, e.Email, e.PhoneNumber, e.Website, e.Address, e.Country })
 
                 })
@@ -56,7 +57,9 @@ namespace ERP.API.Controllers
                     Message = "",
                     data = new
                     {
-                        clients.Name,
+                        clients.FirstName,
+                        clients.LastName,
+
 
                     }
                 };
@@ -79,7 +82,8 @@ namespace ERP.API.Controllers
 
             var clients = new Client
             {
-                Name = model.Name,
+               FirstName = model.FirstName,
+               LastName = model.LastName,
 
                 ClientContacts = model.contacts.Select(x => new ClientContact { Email = x.Email, PhoneNumber = x.PhoneNumber, Website = x.Website, Address = x.Address, Country = x.Country }).ToList()
             };
@@ -94,7 +98,8 @@ namespace ERP.API.Controllers
                 data = new
                 {
                     clients.Id,
-                    clients.Name,
+                    clients.FirstName,
+                    clients.LastName,
 
 
                 }
@@ -117,7 +122,8 @@ namespace ERP.API.Controllers
 
             if (client != null)
             {
-                client.Name = model.Name;
+                client.FirstName = model.FirstName;
+                client.LastName = model.LastName;   
 
 
                 var contactIds = model.contacts.Select(x => x.Id).ToList();
