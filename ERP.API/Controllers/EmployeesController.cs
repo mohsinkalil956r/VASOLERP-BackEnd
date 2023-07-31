@@ -26,7 +26,7 @@ namespace ERP.API.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var employee = await this._repository.Get().Include(p => p.EmployeeContacts).ToListAsync();
+            var employee = await this._repository.Get().Include(p => p.EmployeeContacts).Include(d=>d.Department).ToListAsync();
             return Ok(new APIResponse<object>
             {
                 IsError = false,
@@ -39,10 +39,12 @@ namespace ERP.API.Controllers
                     x.Salary,
                     x.DOB,
                     x.CNIC,
-                    EmployeeContact = x.EmployeeContacts.Select(e => new { e.Id, e.Address, e.Website,e.PhoneNumber,e.Email })
-
+                    x.ContractDate,
+                    EmployeeContact = x.EmployeeContacts.Select(e => new { e.Id, e.Address, e.Website, e.PhoneNumber, e.Email }),
+                    Department = new { x.Department.Id, x.Department.Name },
+                    x.IsActive,
                 })
-            });
+            }) ;
         }
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
@@ -63,7 +65,10 @@ namespace ERP.API.Controllers
                         employee.Salary,
                         employee.DOB,
                         employee.CNIC,
+                        employee.ContractDate,
                        employee.EmployeeContacts,
+                       employee.Department,
+                       employee.IsActive,
                      }
                 };
 
@@ -88,6 +93,8 @@ namespace ERP.API.Controllers
                 Salary = model.Salary,
                 DOB = model.DOB,
                 CNIC = model.CNIC,
+                ContractDate=model.ContractDate,
+                DepartmentId=model.DepartmentId,
                 EmployeeContacts = model.Contacts.Select(x => new EmployeeContact { Address = x.Address ,Website=x.Website,PhoneNumber=x.PhoneNumber,Email=x.Email}).ToList() // Initialize the EmployeeContacts collection
             };
 
@@ -106,6 +113,8 @@ namespace ERP.API.Controllers
                     employee.Salary,
                     employee.DOB,
                     employee.CNIC,
+                    employee.ContractDate,
+                    employee.DepartmentId,
                 }
             });
         }
@@ -127,6 +136,8 @@ namespace ERP.API.Controllers
                 employee.Salary = model.Salary;
                 employee.DOB = model.DOB;
                 employee.CNIC = model.CNIC;
+                employee.ContractDate = model.ContractDate;
+                employee.DepartmentId = model.DepartmentId;
 
                 var contactIds = model.Contacts.Select(x => x.Id).ToList();
 
@@ -163,6 +174,7 @@ namespace ERP.API.Controllers
             if (employee != null)
             {
                 employee.IsActive = false;
+               await this. _repository.SaveChanges();
                 return Ok(new APIResponse<Object>
                 {
                     IsError = false,

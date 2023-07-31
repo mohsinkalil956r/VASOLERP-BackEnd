@@ -20,11 +20,52 @@ namespace ERP.API.Controllers
             this._repository = repository;
         }
 
+        //[HttpGet]
+        //public async Task<APIResponse<Object>> Get()
+        //{
+        //    var assets = await this._repository.Get()
+        //        .Include(a => a.AssetType).ToListAsync();
+
+        //    var result = assets.Select(p => new
+        //    {
+        //        p.Id,
+        //        p.Name,
+        //        p.Description,
+        //        p.PurchaseDate,
+        //        p.PurchasePrice,
+        //        AssetType = new { p.AssetType.Id, p.AssetType.Name },
+
+        //    }).ToList();
+
+        //    return new APIResponse<object>
+        //    {
+        //        IsError = false,
+        //        Message = "",
+        //        data = result
+        //    };
+        //}
+
+
         [HttpGet]
-        public async Task<APIResponse<Object>> Get()
+        public async Task<APIResponse<object>> Get(string searchValue, int pageNumber = 1,
+            int pageSize = 10)
         {
-            var assets = await this._repository.Get()
-                .Include(a => a.AssetType).ToListAsync();
+            var query = this._repository.Get()
+                .Include(p => p.AssetType).AsQueryable();
+
+            // Apply search filter if searchValue is provided
+            if (!string.IsNullOrEmpty(searchValue))
+            {
+                query = query.Where(p => p.Name.Contains(searchValue));
+            }
+
+            // Get the total count of items without pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+
+            var assets = await query.ToListAsync();
 
             var result = assets.Select(p => new
             {
@@ -41,7 +82,14 @@ namespace ERP.API.Controllers
             {
                 IsError = false,
                 Message = "",
-                data = result
+                data = new
+                {
+                    TotalCount = totalCount,
+                    PageSize = pageSize,
+                    CurrentPage = pageNumber,
+                    SearchValue = searchValue,
+                    Results = result
+                }
             };
         }
 
