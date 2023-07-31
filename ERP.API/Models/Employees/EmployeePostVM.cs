@@ -9,6 +9,9 @@
         public string CNIC { get; set; }
         public double Salary { get; set; }
 
+        public DateTime ContractDate { get; set; }
+
+        public int DepartmentId { get; set; }
         public List<EmployeeContacts.EmployeeContactPutVM> Contacts { get; set; }
 
     }
