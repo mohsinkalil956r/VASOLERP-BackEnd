@@ -24,18 +24,16 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IActionResult> Get(string searchValue="", int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> Get(string? searchValue = "", int pageNumber = 1, int pageSize = 10)
         {
-            var query = this._repository.Get()
-                .Include(p => p.Projects)
-                .Include(p => p.ClientContacts).AsQueryable();
+            var query =   this._repository.Get().Include(p => p.ClientContacts).AsQueryable();
 
-            // Apply search filter if searchValue is provided
+            // Apply search filter if searchValue is provided and not null or empty
             if (!string.IsNullOrEmpty(searchValue))
             {
                 query = query.Where(p =>
                     p.FirstName.Contains(searchValue) ||
-                    p.LastName.Contains(searchValue)||
+                    p.LastName.Contains(searchValue) ||
                     p.ClientContacts.Any(cc => cc.Email.Contains(searchValue)) ||
                     p.ClientContacts.Any(cc => cc.Address.Contains(searchValue)) ||
                     p.ClientContacts.Any(cc => cc.Website.Contains(searchValue)) ||
@@ -60,7 +58,7 @@ namespace ERP.API.Controllers
                 ClientContacts = p.ClientContacts.Select(e => new { e.Id, e.Email, e.PhoneNumber, e.Website, e.Address, e.Country })
             }).ToList();
 
-            return Ok( new APIResponse<object>
+            return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
