@@ -34,7 +34,8 @@ namespace ERP.API.Controllers
             if (!string.IsNullOrEmpty(searchValue))
             {
                 query = query.Where(p =>
-                    p.Name.Contains(searchValue) ||
+                    p.FirstName.Contains(searchValue) ||
+                    p.LastName.Contains(searchValue)||
                     p.ClientContacts.Any(cc => cc.Email.Contains(searchValue)) ||
                     p.ClientContacts.Any(cc => cc.Address.Contains(searchValue)) ||
                     p.ClientContacts.Any(cc => cc.Website.Contains(searchValue)) ||
@@ -54,8 +55,8 @@ namespace ERP.API.Controllers
             var result = clients.Select(p => new
             {
                 p.Id,
-                p.Name,
-              
+                p.FirstName,
+                p.LastName,
                 ClientContacts = p.ClientContacts.Select(e => new { e.Id, e.Email, e.PhoneNumber, e.Website, e.Address, e.Country })
             }).ToList();
 
