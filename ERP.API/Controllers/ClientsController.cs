@@ -27,12 +27,19 @@ namespace ERP.API.Controllers
         {
             var query = this._repository.Get()
                 .Include(p => p.Projects)
-                .Include(p => p.ClientContacts);
+                .Include(p => p.ClientContacts).AsQueryable();
 
             // Apply search filter if searchValue is provided
             if (!string.IsNullOrEmpty(searchValue))
             {
-                query = query.Where(p => p.Name.Contains(searchValue));
+                query = query.Where(p =>
+                    p.Name.Contains(searchValue) ||
+                    p.ClientContacts.Any(cc => cc.Email.Contains(searchValue)) ||
+                    p.ClientContacts.Any(cc => cc.Address.Contains(searchValue)) ||
+                    p.ClientContacts.Any(cc => cc.Website.Contains(searchValue)) ||
+                    p.ClientContacts.Any(cc => cc.PhoneNumber.Contains(searchValue)) ||
+                    p.ClientContacts.Any(cc => cc.Country.Contains(searchValue))
+                );
             }
 
             // Get the total count of items without pagination
@@ -47,7 +54,7 @@ namespace ERP.API.Controllers
             {
                 p.Id,
                 p.Name,
-                Projects = p.Projects.Select(e => new { e.Id, e.Name, e.StartDate, e.DeadLine }),
+              
                 ClientContacts = p.ClientContacts.Select(e => new { e.Id, e.Email, e.PhoneNumber, e.Website, e.Address, e.Country })
             }).ToList();
 
@@ -55,7 +62,7 @@ namespace ERP.API.Controllers
             {
                 IsError = false,
                 Message = "",
-                Data = new
+                data = new
                 {
                     TotalCount = totalCount,
                     PageSize = pageSize,
