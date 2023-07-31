@@ -23,7 +23,7 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<APIResponse<object>> Get(string searchValue, int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> Get(string searchValue, int pageNumber = 1, int pageSize = 10)
         {
             var query = this._repository.Get()
                 .Include(p => p.Projects)
@@ -58,7 +58,7 @@ namespace ERP.API.Controllers
                 ClientContacts = p.ClientContacts.Select(e => new { e.Id, e.Email, e.PhoneNumber, e.Website, e.Address, e.Country })
             }).ToList();
 
-            return new APIResponse<object>
+            return Ok( new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
@@ -70,7 +70,7 @@ namespace ERP.API.Controllers
                     SearchValue = searchValue,
                     Results = result
                 }
-            };
+            });
         }
 
         // GET a    pi/<ValuesController>/5
