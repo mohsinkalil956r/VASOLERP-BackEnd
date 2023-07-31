@@ -24,7 +24,7 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IActionResult> Get(string searchValue, int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> Get(string searchValue="", int pageNumber = 1, int pageSize = 10)
         {
             var query = this._repository.Get()
                 .Include(p => p.Projects)
