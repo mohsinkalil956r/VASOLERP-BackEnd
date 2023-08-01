@@ -33,13 +33,8 @@ namespace ERP.API.Controllers
             {
                 query = query.Where(p =>
                     p.FirstName.Contains(searchValue) ||
-                    p.LastName.Contains(searchValue) ||
-                    p.ClientContacts.Any(cc => cc.Email.Contains(searchValue)) ||
-                    p.ClientContacts.Any(cc => cc.Address.Contains(searchValue)) ||
-                    p.ClientContacts.Any(cc => cc.Website.Contains(searchValue)) ||
-                    p.ClientContacts.Any(cc => cc.PhoneNumber.Contains(searchValue)) ||
-                    p.ClientContacts.Any(cc => cc.Country.Contains(searchValue))
-                );
+                    p.LastName.Contains(searchValue) 
+                    );
             }
 
             // Get the total count of items without pagination
