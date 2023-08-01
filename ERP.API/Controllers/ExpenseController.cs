@@ -19,7 +19,7 @@ namespace ERP.API.Controllers
             this._repository = repository;
         }
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<APIResponse<object>> Get(string searchValue, int pageNumber = 1, int pageSize = 10)
         {
             var expense = await this._repository.Get()
                 .Include(e=>e.ExpenseType)
