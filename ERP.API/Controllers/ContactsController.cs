@@ -41,7 +41,7 @@ namespace ERP.API.Controllers
                 .Include(e => e.Client)
                 .Select(c => new { Type = "Client",
                 ClientId = c.ClientId,
-                Name = c.Client.Name })
+                 c.Client.FirstName})
                 .ToListAsync();
 
             //List<string> concatinated = employeeContacts.Concat(clientContacts).ToList();

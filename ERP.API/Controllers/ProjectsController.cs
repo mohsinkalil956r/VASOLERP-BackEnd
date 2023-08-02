@@ -24,7 +24,7 @@ namespace ERP.API.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var projects = await this._repository.Get().Include(c=>c.Client).Include(cc=>cc.ClientContact)
+            var projects = await this._repository.Get().Include(c=>c.Client.ClientContacts)
                 
                 .ToListAsync();
 
@@ -35,7 +35,12 @@ namespace ERP.API.Controllers
                 p.Description,
                 p.StartDate,
                 p.DeadLine,
-              
+                Client = new
+                {
+                    p.Client.FirstName,
+                    Country = p.Client.ClientContacts.Select(c => c.Country).FirstOrDefault() // Get the first Country associated with the ClientContact
+
+                },
                 p.Budget,
                }).ToList();
 
@@ -68,15 +73,17 @@ namespace ERP.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] ProjectPostVM model)
         {
-            if (ModelState.IsValid) { 
-            var project = new Project
-            {
-                Budget = model.Budget,
-                ClientId = model.ClientId,
-                DeadLine = model.DeadLine,
-                Description = model.Description,
-                Name = model.Name,
-                StartDate = model.StartDate,
+            if (ModelState.IsValid) {
+                var project = new Project
+                {
+                    Budget = model.Budget,
+                    ClientId = model.ClientId,
+                    DeadLine = model.DeadLine,
+                    Description = model.Description,
+                    Name = model.Name,
+                    StartDate = model.StartDate,
+
+                    Clients = model.client.Select(x => new Client { FirstName = x.FirstName }).ToList(),
                 ProjectEmployees = model.EmployeeIds.Select(x => new ProjectEmployee { EmployeeId = x }).ToList()
             };
 
@@ -105,7 +112,7 @@ namespace ERP.API.Controllers
             {
                 project.ProjectEmployees = model.EmployeeIds.Select(e => new ProjectEmployee { ProjectId = id, EmployeeId = e }).ToList();
                 project.StartDate = model.StartDate;
-                project.ProjectStatusId = model.ProjectStatusId;
+                project.StatusId = model.StatusId;
                 project.DeadLine = model.DeadLine;
                 project.Description = model.Description; 
                 project.Name = model.Name;

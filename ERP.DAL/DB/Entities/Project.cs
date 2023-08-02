@@ -17,13 +17,14 @@ namespace ERP.DAL.DB.Entities
         public double Budget { get; set; }
 
         public int ClientId { get; set; }
-        public int ClientContactId { get; set; }
-        public int ProjectStatusId { get; set; }
+      
+        public int StatusId { get; set; }
 
         public Client Client { get; set; }
         public Statuses Status { get; set; }
 
-        public ClientContact ClientContact { get; set; }
+        public List<Client> Clients { get; set; } = new();
+
 
         public List<ProjectEmployee> ProjectEmployees { get; set; } = new();
 

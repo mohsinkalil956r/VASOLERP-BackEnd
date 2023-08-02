@@ -2,7 +2,7 @@
 {
     public class ProjectPutVM : ProjectPostVM
     {
-        public int ProjectStatusId { get; set; }
+        public int StatusId { get; set; }
 
     }
 }
