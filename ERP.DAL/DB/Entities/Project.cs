@@ -23,8 +23,7 @@ namespace ERP.DAL.DB.Entities
         public Client Client { get; set; }
         public Statuses Status { get; set; }
 
-        public List<Client> Clients { get; set; } = new();
-
+       
 
         public List<ProjectEmployee> ProjectEmployees { get; set; } = new();
 
