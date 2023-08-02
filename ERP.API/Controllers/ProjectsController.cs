@@ -24,7 +24,7 @@ namespace ERP.API.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var projects = await this._repository.Get()
+            var projects = await this._repository.Get().Include(c=>c.Client).Include(cc=>cc.ClientContact)
                 
                 .ToListAsync();
 
@@ -34,7 +34,8 @@ namespace ERP.API.Controllers
                 p.Name,
                 p.Description,
                 p.StartDate,
-                p.DeadLine,  
+                p.DeadLine,
+              
                 p.Budget,
                }).ToList();
 
