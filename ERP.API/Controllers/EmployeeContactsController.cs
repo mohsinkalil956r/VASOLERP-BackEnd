@@ -88,7 +88,7 @@ namespace ERP.API.Controllers
                 PhoneNumber = model.PhoneNumber,
                 Website = model.Website,
                 Address = model.Address,
-                EmployeeId = model.EmployeeId,
+               
             };
 
             _repository.Add(employeeContact);
@@ -129,7 +129,7 @@ namespace ERP.API.Controllers
                 employeeContact.PhoneNumber = model.PhoneNumber;
                 employeeContact.Website = model.Website;
                 employeeContact.Address = model.Address;
-                employeeContact.EmployeeId = model.EmployeeId;
+              
 
                 this._repository.Update(employeeContact);
                 await this._repository.SaveChanges();
@@ -137,7 +137,8 @@ namespace ERP.API.Controllers
                 return Ok(new APIResponse<object>
                 {
                     IsError = false,
-                    Message = ""
+                    Message = "",
+                    data= employeeContact
                 });
             }
 
