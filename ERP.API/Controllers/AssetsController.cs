@@ -46,17 +46,21 @@ namespace ERP.API.Controllers
         //}
 
 
-        [HttpGet]
-        public async Task<APIResponse<object>> Get(string searchValue, int pageNumber = 1,
-            int pageSize = 10)
-        {
-            var query = this._repository.Get()
-                .Include(p => p.AssetType).AsQueryable();
 
-            // Apply search filter if searchValue is provided
+        [HttpGet]
+        public async Task<IActionResult> Get(string? searchValue = "", int pageNumber = 1, int pageSize = 10)
+        {
+            var query = this._repository.Get().Include(p => p.AssetType).AsQueryable();
+
+            // Apply search filter if searchValue is provided and not null or empty
             if (!string.IsNullOrEmpty(searchValue))
             {
-                query = query.Where(p => p.Name.Contains(searchValue));
+                query = query.Where(p =>
+                    p.Name.Contains(searchValue) ||
+                    p.Description.Contains(searchValue) ||
+                    p.PurchaseDate.ToString().Contains(searchValue) ||
+                    p.PurchasePrice.ToString().Contains(searchValue)
+                    );
             }
 
             // Get the total count of items without pagination
@@ -69,16 +73,16 @@ namespace ERP.API.Controllers
 
             var result = assets.Select(p => new
             {
-                p.Id,
                 p.Name,
                 p.Description,
                 p.PurchaseDate,
                 p.PurchasePrice,
-                AssetType = new { p.AssetType.Id, p.AssetType.Name },
 
+                AssetType = new { p.AssetType.Id, p.AssetType.Name },
             }).ToList();
 
-            return new APIResponse<object>
+
+            return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
@@ -90,8 +94,9 @@ namespace ERP.API.Controllers
                     SearchValue = searchValue,
                     Results = result
                 }
-            };
+            });
         }
+
 
 
         // GET api/<ValuesController>/5
