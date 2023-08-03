@@ -84,7 +84,7 @@ namespace ERP.API.Controllers
                     Name = model.Name,
                     StartDate = model.StartDate,
                     StatusId=model.StatusId,
-                     ProjectEmployees = model.EmployeeIds.Select(x => new ProjectEmployee { EmployeeId = x }).ToList()
+                    ProjectEmployees = model.EmployeeIds.Select(x => new ProjectEmployee { EmployeeId = x }).ToList()
             };
 
             _repository.Add(project);
