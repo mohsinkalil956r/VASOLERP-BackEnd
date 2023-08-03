@@ -10,8 +10,8 @@ namespace ERP.API.Models.Projects
         public DateTime DeadLine { get; set; }
         public double Budget { get; set; }
         public int ClientId { get; set; }
-        public List<Client.ClientPostVM> client { get; set; }
 
+        public int StatusId { get; set; }
         public List<int> EmployeeIds { get; set; } = new();
 
     }

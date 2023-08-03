@@ -24,7 +24,7 @@ namespace ERP.API.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var projects = await this._repository.Get().Include(c=>c.Client.ClientContacts)
+            var projects = await this._repository.Get().Include(c=>c.Client.ClientContacts).Include(c=>c.Status)
                 
                 .ToListAsync();
 
@@ -35,6 +35,7 @@ namespace ERP.API.Controllers
                 p.Description,
                 p.StartDate,
                 p.DeadLine,
+                p.Status.IsProgress,
                 Client = new
                 {
                     p.Client.FirstName,
@@ -82,7 +83,7 @@ namespace ERP.API.Controllers
                     Description = model.Description,
                     Name = model.Name,
                     StartDate = model.StartDate,
-
+                    StatusId=model.StatusId,
                      ProjectEmployees = model.EmployeeIds.Select(x => new ProjectEmployee { EmployeeId = x }).ToList()
             };
 
@@ -117,7 +118,7 @@ namespace ERP.API.Controllers
                 project.Name = model.Name;
                 project.Budget = model.Budget;
                 project.ClientId = model.ClientId;
-
+                project.StatusId = model.StatusId;
                 this._repository.Update(project);
                 await this._repository.SaveChanges();
                 return Ok(new APIResponse<Object>
