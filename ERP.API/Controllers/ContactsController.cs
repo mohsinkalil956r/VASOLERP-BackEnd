@@ -39,14 +39,10 @@ namespace ERP.API.Controllers
                 .ToListAsync();
 
             var clientContacts = await this._clientContact.Get()
-                .Include(c => c.Client)
-                .Select(c => new
-                {
-                    Type = "Client",
-                    Id = c.ClientId, // Assuming ClientId is the unique identifier for clients
-                    FirstName = c.Client.FirstName,
-                    LastName = c.Client.LastName
-                })
+                .Include(e => e.Client)
+                .Select(c => new { Type = "Client",
+                ClientId = c.ClientId,
+                Name = c.Client.Name })
                 .ToListAsync();
 
             // Concatenate employeeContacts and clientContacts into a single list
