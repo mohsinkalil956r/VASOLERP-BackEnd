@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ERP.API.Controllers
 {
@@ -19,28 +20,51 @@ namespace ERP.API.Controllers
             this._repository = repository;
         }
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(string? searchValue="", int pageNumber = 1, int pageSize = 10)
         {
-            var expense = await this._repository.Get()
-                .Include(e=>e.ExpenseType)
-                .Include(p=>p.PaymentMode)
-                .ToListAsync();
+            var query = this._repository.Get()
+                .Include(e => e.ExpenseType)
+                .Include(p => p.PaymentMode)
+                .AsQueryable();
+            if (!string.IsNullOrEmpty(searchValue))
+            {
+                query = query.Where(e =>
+                    e.Description.Contains(searchValue) ||
+                    e.ExpenseDate.ToString().Contains(searchValue) ||
+                    e.Amount.ToString().Contains(searchValue)
+                );
+            }
+            var totalCount = await query.CountAsync();
+
+            query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            var expense = await query.ToListAsync();
+
+            var result = expense.Select(p => new
+            {
+                p.Id,
+                p.ExpenseDate,
+                p.Description,
+                p.Amount,
+                ExpenseType = new { p.ExpenseType.Id, p.ExpenseType.Name },
+                PaymentMode = new { p.PaymentMode.Id, p.PaymentMode.Name },
+
+            }).ToList();
+
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = expense.Select(x=> new
+                data = new
                 {
-                    id = x.Id,
-                    ExpenseDate = x.ExpenseDate,
-                    Description = x.Description,
-                    Amount = x.Amount,
-                    ExpenseType = new {x.ExpenseType.Id, x.ExpenseType.Name},
-                    PaymentMode = new {x.PaymentMode.Id, x.PaymentMode.Name},
-                 })
-            }) ;
-            
+                    TotalCount = totalCount,
+                    PageSize = pageSize,
+                    CurrentPage = pageNumber,
+                    SearchValue = searchValue,
+                    Results = result
+                }
+            });
         }
+      
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id) { 
         var expense = await this._repository.Get(id)
