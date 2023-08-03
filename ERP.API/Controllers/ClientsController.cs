@@ -24,22 +24,47 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(string? searchValue = "", int pageNumber = 1, int pageSize = 10)
         {
-            var client = await this._repository.Get().Include(p => p.ClientContacts).ToListAsync();
+            var query =   this._repository.Get().Include(p => p.ClientContacts).AsQueryable();
+
+            // Apply search filter if searchValue is provided and not null or empty
+            if (!string.IsNullOrEmpty(searchValue))
+            {
+                query = query.Where(p =>
+                    p.FirstName.Contains(searchValue) ||
+                    p.LastName.Contains(searchValue) 
+                    );
+            }
+
+            // Get the total count of items without pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+
+            var clients = await query.ToListAsync();
+
+            var result = clients.Select(p => new
+            {
+                p.Id,
+                p.FirstName,
+                p.LastName,
+                ClientContacts = p.ClientContacts.Select(e => new { e.Id, e.Email, e.PhoneNumber, e.Website, e.Address, e.Country })
+            }).ToList();
+
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = client.Select(x => new
+                data = new
                 {
-                    x.Id,
-                    x.FirstName,
-                    x.LastName,
-                    ClientContacts = x.ClientContacts.Select(e => new { e.Id, e.Email, e.PhoneNumber, e.Website, e.Address, e.Country })
-
-                })
-
+                    TotalCount = totalCount,
+                    PageSize = pageSize,
+                    CurrentPage = pageNumber,
+                    SearchValue = searchValue,
+                    Results = result
+                }
             });
         }
 
