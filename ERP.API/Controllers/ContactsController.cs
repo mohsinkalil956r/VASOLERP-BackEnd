@@ -79,6 +79,7 @@ namespace ERP.API.Controllers
                 p.FirstName,
                 p.LastName,
                 p.DepartmentName,
+                p.PhoneNumber,
                 p.Type // Include the Type in the result
             }).ToList();
 
