@@ -74,41 +74,6 @@ namespace ERP.API.Controllers
             });
         }
 
-
-        //// GET: api/<ValuesController>
-        //[HttpGet]
-        //public async Task<IActionResult> Get()
-        //{
-        //    var projects = await this._repository.Get().Include(c=>c.Client.ClientContacts).Include(c=>c.Status)
-                
-        //        .ToListAsync();
-
-        //    var result = projects.Select(p => new
-        //    {
-        //        p.Id,
-        //        p.Name,
-        //        p.Description,
-        //        p.StartDate,
-        //        p.DeadLine,
-        //        p.Status.IsProgress,
-        //        Client = new
-        //        {
-        //            p.Client.FirstName,
-        //            Country = p.Client.ClientContacts.Select(c => c.Country).FirstOrDefault() // Get the first Country associated with the ClientContact
-
-        //        },
-        //        p.Budget,
-        //       }).ToList();
-
-        //    return Ok(new APIResponse<Object>
-        //    {
-        //        IsError = false,
-        //        Message = "",
-        //        data = result,
-        //    });
-        //}
-
-        // GET api/<ValuesController>/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
