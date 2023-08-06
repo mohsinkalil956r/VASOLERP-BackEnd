@@ -28,13 +28,16 @@ namespace ERP.API.Controllers
         public async Task<IActionResult> Get(string? searchValue = "", int pageNumber = 1, int pageSize = 10)
         {
             var employeeContacts = await this._employeeContact.Get()
-                .Include(e => e.Employee)
+                .Include(e => e.Employee).ThenInclude(d => d.Department)
                 .Select(e => new
                 {
                     Type = "Employee",
                     Id = e.EmployeeId, // Assuming EmployeeId is the unique identifier for employees
                     FirstName = e.Employee.FirstName,
                     LastName = e.Employee.LastName,
+                    e.PhoneNumber,
+                    DepartmentName = e.Employee.Department.Name,
+
                 })
                 .ToListAsync();
 
@@ -45,7 +48,9 @@ namespace ERP.API.Controllers
                     Type = "Client",
                     Id = c.ClientId, // Assuming ClientId is the unique identifier for clients
                     FirstName = c.Client.FirstName,
-                    LastName = c.Client.LastName
+                    LastName = c.Client.LastName,
+                    c.PhoneNumber,
+                    DepartmentName="",
                 })
                 .ToListAsync();
 
@@ -73,6 +78,7 @@ namespace ERP.API.Controllers
                 p.Id,
                 p.FirstName,
                 p.LastName,
+                p.DepartmentName,
                 p.Type // Include the Type in the result
             }).ToList();
 
