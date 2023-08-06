@@ -19,39 +19,94 @@ namespace ERP.API.Controllers
             this._repository = repository;
         }
 
-
-        // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(string? searchValue = "", int pageNumber = 1, int pageSize = 10)
         {
-            var projects = await this._repository.Get().Include(c=>c.Client.ClientContacts).Include(c=>c.Status)
-                
-                .ToListAsync();
+            var query =  this._repository.Get().Include(c => c.Client.ClientContacts).Include(c => c.Status).AsQueryable();
 
-            var result = projects.Select(p => new
+            // Apply search filter if searchValue is provided and not null or empty
+            if (!string.IsNullOrEmpty(searchValue))
+            {
+                query = query.Where(p =>
+                    p.Name.Contains(searchValue) ||
+                    p.Description.Contains(searchValue)||
+                    p.StartDate.ToString().Contains(searchValue) ||
+                    p.DeadLine.ToString().Contains(searchValue)||
+                    p.Budget.ToString().Contains(searchValue)
+                    );
+            }
+
+            // Get the total count of items without pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+
+            var clients = await query.ToListAsync();
+
+            var result = clients.Select(p => new
             {
                 p.Id,
                 p.Name,
                 p.Description,
-                p.StartDate,
-                p.DeadLine,
-                p.Status.IsProgress,
-                Client = new
-                {
-                    p.Client.FirstName,
+                p.StartDate, p.DeadLine,
+                p.Budget,
+               Client = new
+               {
+                   p.Client.FirstName,
                     Country = p.Client.ClientContacts.Select(c => c.Country).FirstOrDefault() // Get the first Country associated with the ClientContact
 
-                },
-                p.Budget,
+                       },
                }).ToList();
 
-            return Ok(new APIResponse<Object>
+            return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = result,
+                data = new
+                {
+                    TotalCount = totalCount,
+                    PageSize = pageSize,
+                    CurrentPage = pageNumber,
+                    SearchValue = searchValue,
+                    Results = result
+                }
             });
         }
+
+
+        //// GET: api/<ValuesController>
+        //[HttpGet]
+        //public async Task<IActionResult> Get()
+        //{
+        //    var projects = await this._repository.Get().Include(c=>c.Client.ClientContacts).Include(c=>c.Status)
+                
+        //        .ToListAsync();
+
+        //    var result = projects.Select(p => new
+        //    {
+        //        p.Id,
+        //        p.Name,
+        //        p.Description,
+        //        p.StartDate,
+        //        p.DeadLine,
+        //        p.Status.IsProgress,
+        //        Client = new
+        //        {
+        //            p.Client.FirstName,
+        //            Country = p.Client.ClientContacts.Select(c => c.Country).FirstOrDefault() // Get the first Country associated with the ClientContact
+
+        //        },
+        //        p.Budget,
+        //       }).ToList();
+
+        //    return Ok(new APIResponse<Object>
+        //    {
+        //        IsError = false,
+        //        Message = "",
+        //        data = result,
+        //    });
+        //}
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
