@@ -1,12 +1,15 @@
 ﻿using ERP.API.Models;
 using ERP.API.Models.Expense;
 using ERP.API.Models.ExpenseGetReponse;
+using ERP.API.Models.ExpenseTypeGetResponse;
+using ERP.API.Models.PaymentModeGetResponse;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using System.Xml.Linq;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ERP.API.Controllers
@@ -21,8 +24,7 @@ namespace ERP.API.Controllers
             this._repository = repository;
         }
         [HttpGet]
-        //public async Task<IActionResult> Get(string? searchValue="", int pageNumber = 1, int pageSize = 10)
-        public async Task<PaginatedResult<object>> Get(string? searchValue="", int pageNumber=1,int pageSize=10)
+        public async Task<IActionResult> Get(string? searchValue="", int pageNumber=1,int pageSize=10)
         {
             var query = this._repository.Get()
                 .Include(e => e.ExpenseType)
@@ -47,34 +49,17 @@ namespace ERP.API.Controllers
                 ExpenseDate = p.ExpenseDate,
                 Amount = p.Amount,
                 Description = p.Description,
-                ExpenseType = new { Id = p.ExpenseType.Id, Name = p.ExpenseType.Name},
-                ExpenseTypeId - p.ExpenseType?.Id,
+                ExpenseType = new ExpenseTypeGetResponseVM { Id = p.ExpenseTypeId, Name = p.ExpenseType.Name},
+                PaymentMode = new PaymentModeGetResponseVM { Id = p.PaymentModeId, Name = p.PaymentMode.Name},
             }).ToList();
-            //{
-            //    p.Id,
-            //    p.ExpenseDate,
-            //    p.Description,
-            //    p.Amount,
-            //    ExpenseType = new { p.ExpenseType.Id, p.ExpenseType.Name },
-            //    PaymentMode = new { p.PaymentMode.Id, p.PaymentMode.Name },
 
-            //}).ToList();
-
-            var paginationResult = new PaginatedResult(result ?? new List<Object>(), totalCount);
-            return paginationResult;
-            //    Ok(new APIResponse<object>
-            //{
-            //    IsError = false,
-            //    Message = "",
-            //    data = new
-            //    {
-            //        TotalCount = totalCount,
-            //        PageSize = pageSize,
-            //        CurrentPage = pageNumber,
-            //        SearchValue = searchValue,
-            //        Results = result
-            //    }
-            //});
+            var paginationResult = new PaginatedResult<ExpenseGetResponseVM>(result, totalCount);
+            return Ok(new APIResponse<object>
+            {
+                IsError = false,
+                Message = "",
+                data = paginationResult
+            }); 
         }
       
         [HttpGet("{id}")]
