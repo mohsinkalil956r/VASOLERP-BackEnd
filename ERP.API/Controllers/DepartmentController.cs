@@ -7,6 +7,7 @@ using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ERP.API.Controllers
 {
@@ -23,21 +24,47 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(string? searchValue="", int pageNumber = 1, int pageSize = 10)
         {
-            var departments = await this._repository.Get().ToListAsync();
+            var departments = this._repository.Get();
+
+            // Apply search filter if searchValue is provided
+
+            if (!string.IsNullOrEmpty(searchValue))
+            {
+                departments = departments.Where(p => p.Name.Contains(searchValue));
+            }
+
+            // Get the total count of departments without pagination
+            var totalCount = await departments.CountAsync();
+
+            // Apply pagination
+
+            departments = departments.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+
+            var department = await departments.ToListAsync();
+
+            var result = department.Select(p => new
+            {
+                p.Id,
+                p.Name,
+            }).ToList();
 
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = departments.Select(d => new
+                data = new
                 {
-                    Id = d.Id,
-                    name = d.Name
-                })
+                    TotalCount = totalCount,
+                    PageSize = pageSize,
+                    CurrentPage = pageNumber,
+                    SearchValue = searchValue,
+                    Results = result
+                }
             });
-        } 
+        }
+ 
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]

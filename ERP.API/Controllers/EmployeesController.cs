@@ -24,28 +24,54 @@ namespace ERP.API.Controllers
         }
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(string? searchValue = "", int pageNumber = 1, int pageSize = 10)
         {
-            var employee = await this._repository.Get().Include(p => p.EmployeeContacts).Include(d=>d.Department).ToListAsync();
+            var query = this._repository.Get().Include(p => p.EmployeeContacts).AsQueryable();
+
+            // Apply search filter if searchValue is provided and not null or empty
+            if (!string.IsNullOrEmpty(searchValue))
+            {
+                query = query.Where(p =>
+                    p.FirstName.Contains(searchValue) ||
+                    p.LastName.Contains(searchValue) ||
+                    p.Salary.ToString().Contains(searchValue) ||
+                    p.DOB.ToString().Contains(searchValue) ||   
+                    p.CNIC.Contains(searchValue) ||
+                    p.ContractDate.ToString().Contains(searchValue) 
+                );
+            }
+
+            // Get the total count of items without pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+
+            var employees = await query.ToListAsync();
+
+            var result = employees.Select(p => new
+            {
+                p.Id,
+                p.FirstName,
+                p.LastName,
+                EmployeeContcts = p.EmployeeContacts.Select(e => new { e.Id, e.Address, e.Website, e.PhoneNumber, e.Email })
+            }).ToList();
+
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = employee.Select(x => new
+                data = new
                 {
-                    x.Id,
-                    x.FirstName,
-                    x.LastName,
-                    x.Salary,
-                    x.DOB,
-                    x.CNIC,
-                    x.ContractDate,
-                    EmployeeContact = x.EmployeeContacts.Select(e => new { e.Id, e.Address, e.Website, e.PhoneNumber, e.Email }),
-                    Department = new { x.Department.Id, x.Department.Name },
-                    x.IsActive,
-                })
-            }) ;
+                    TotalCount = totalCount,
+                    PageSize = pageSize,
+                    CurrentPage = pageNumber,
+                    SearchValue = searchValue,
+                    Results = result
+                }
+            });
         }
+
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
