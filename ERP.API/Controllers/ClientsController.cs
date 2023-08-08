@@ -7,6 +7,7 @@ using ERP.API.Models.Client;
 using ERP.API.Models;
 using ERP.API.Models.Employees;
 using System.Linq;
+using ERP.API.Models.ClientGetResponse;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -45,12 +46,12 @@ namespace ERP.API.Controllers
 
             var clients = await query.ToListAsync();
 
-            var result = clients.Select(p => new
+            var result = clients.Select(p => new ClientGetResponseVM
             {
-                p.Id,
-                p.FirstName,
-                p.LastName,
-                ClientContacts = p.ClientContacts.Select(e => new { e.Id, e.Email, e.PhoneNumber, e.Website, e.Address, e.Country })
+              Id=  p.Id,
+              FirstName=  p.FirstName,
+               LastName= p.LastName,
+                contacts =  p.ClientContacts.Select(e => new { e.Id, e.Email, e.PhoneNumber, e.Website, e.Address, e.Country })
             }).ToList();
 
             return Ok(new APIResponse<object>

@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
 using ERP.API.Models.Assets;
 using ERP.API.Models;
+using ERP.API.Models.AssetTypeGetResponse;
+using ERP.API.Models.AssettGetResponse;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -71,29 +72,17 @@ namespace ERP.API.Controllers
 
             var assets = await query.ToListAsync();
 
-            var result = assets.Select(p => new
-            {
-                p.Name,
-                p.Description,
-                p.PurchaseDate,
-                p.PurchasePrice,
+            var result = assets.Select(p => new AssetGetResponseVM
+            {Id= p.Id, Name=p.Name,Description= p.Description,PurchaseDate= p.PurchaseDate, PurchasePrice=p.PurchasePrice,
 
-                AssetType = new { p.AssetType.Id, p.AssetType.Name },
+                AssetType =  new AssetTypeGetResponseVM {Id= p.AssetTypeId, Name=p.AssetType.Name },
             }).ToList();
-
-
+            var paginationResult = new PaginatedResult<AssetGetResponseVM>(result, totalCount);
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = new
-                {
-                    TotalCount = totalCount,
-                    PageSize = pageSize,
-                    CurrentPage = pageNumber,
-                    SearchValue = searchValue,
-                    Results = result
-                }
+                data = paginationResult
             });
         }
 

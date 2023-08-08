@@ -1,6 +1,8 @@
 ﻿using ERP.API.Models;
 using ERP.API.Models.Client;
 using ERP.API.Models.DepartmentController;
+using ERP.API.Models.DepartmentGetResponse;
+using ERP.API.Models.ExpenseGetReponse;
 using ERP.API.Models.PaymentModes;
 using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
@@ -26,7 +28,7 @@ namespace ERP.API.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(string? searchValue="", int pageNumber = 1, int pageSize = 10)
         {
-            var departments = this._repository.Get();
+            var departments = this._repository.Get().AsQueryable() ;
 
             // Apply search filter if searchValue is provided
 
@@ -44,12 +46,12 @@ namespace ERP.API.Controllers
 
             var department = await departments.ToListAsync();
 
-            var result = department.Select(p => new
+            var result = department.Select(p => new DepartmentGetPresponseVM
             {
-                p.Id,
-                p.Name,
+              Id=  p.Id,
+              Name=  p.Name,
             }).ToList();
-
+            var paginationResult = new PaginatedResult<DepartmentGetPresponseVM>(result, totalCount);
             return Ok(new APIResponse<object>
             {
                 IsError = false,

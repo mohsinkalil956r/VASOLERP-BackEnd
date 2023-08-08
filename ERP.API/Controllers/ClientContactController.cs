@@ -9,6 +9,11 @@ using ERP.DAL.DB.Entities;
 using System.Net;
 using ERP.API.Models.Client;
 using System.Diagnostics.Metrics;
+using ERP.API.Models.ClientContactResponse;
+using ERP.API.Models.ClientGetResponse;
+using ERP.API.Models.ExpenseGetReponse;
+using ERP.API.Models.ExpenseTypeGetResponse;
+using ERP.API.Models.PaymentModeGetResponse;
 
 namespace ERP.API.Controllers
 {
@@ -25,25 +30,43 @@ namespace ERP.API.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(string? searchValue = "", int pageNumber = 1, int pageSize = 10)
         {
-            var clientContact = await this._repository.Get().ToListAsync();
+            var query = this._repository.Get().AsQueryable();
 
+            if (!string.IsNullOrEmpty(searchValue))
+            {
+                query = query.Where(e =>
+                    e.Email.Contains(searchValue) ||
+                    e.PhoneNumber.ToString().Contains(searchValue) ||
+                    e.Address.Contains(searchValue)||
+                      e.Website.Contains(searchValue) ||
+                    e.Country.Contains(searchValue) 
+                );
+            }
+            var totalCount = await query.CountAsync();
+
+            query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            var expense = await query.ToListAsync();
+            var result = expense.Select(p => new ClientContactGetResponseVM
+            {
+                Id = p.Id,
+                PhoneNumber = p.PhoneNumber,
+                Email = p.Email,
+                Address = p.Address,
+                Website = p.Website,
+                Country = p.Country,
+                Client = new ClientGetResponseVM { FirstName = p.Client.FirstName, LastName = p.Client.LastName }
+            }).ToList();
+
+            var paginationResult = new PaginatedResult<ClientContactGetResponseVM>(result, totalCount);
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = clientContact.Select(x => new
-                {
-                    Id = x.Id,
-                    PhoneNumber = x.PhoneNumber,
-                    Email = x.Email,
-                    Address = x.Address,
-                    Website = x.Website,
-                    Country = x.Country,
-                    ClientId = x.ClientId,
-                })
+                data = paginationResult
             });
+          
         }
 
         [HttpGet("{id}")]

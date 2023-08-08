@@ -2,5 +2,6 @@
 {
     public class DepartmentGetVM : DepartmentPostVM
     {
+        public  int Id { get; set; }
     }
 }
