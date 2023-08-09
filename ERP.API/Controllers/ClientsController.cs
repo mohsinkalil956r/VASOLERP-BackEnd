@@ -8,6 +8,8 @@ using ERP.API.Models;
 using ERP.API.Models.Employees;
 using System.Linq;
 using ERP.API.Models.ClientGetResponse;
+using ERP.API.Models.ClientContactResponse;
+using ERP.API.Models.AssettGetResponse;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -48,24 +50,18 @@ namespace ERP.API.Controllers
 
             var result = clients.Select(p => new ClientGetResponseVM
             {
-              Id=  p.Id,
-              FirstName=  p.FirstName,
-               LastName= p.LastName,
-                contacts =  p.ClientContacts.Select(e => new { e.Id, e.Email, e.PhoneNumber, e.Website, e.Address, e.Country })
+                Id = p.Id,
+                FirstName = p.FirstName,
+                LastName = p.LastName,
+                contacts = p.ClientContacts.Select(e => new ClientContactGetResponseVM { Id = e.Id, Email = e.Email, PhoneNumber = e.PhoneNumber, Website = e.Website, Address = e.Address, Country = e.Country }).ToList()
             }).ToList();
 
+            var paginationResult = new PaginatedResult<ClientGetResponseVM>(result, totalCount);
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = new
-                {
-                    TotalCount = totalCount,
-                    PageSize = pageSize,
-                    CurrentPage = pageNumber,
-                    SearchValue = searchValue,
-                    Results = result
-                }
+                data = paginationResult
             });
         }
 

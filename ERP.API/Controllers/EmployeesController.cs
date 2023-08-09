@@ -6,6 +6,10 @@ using ERP.DAL.Repositories.Abstraction;
 using ERP.API.Models.EmployeeContacts;
 using ERP.API.Models.Employees;
 using ERP.API.Models;
+using ERP.API.Models.EmployeeGetResponse;
+using ERP.API.Models.EmployeeContactGetResponse;
+using ERP.API.Models.ClientContactResponse;
+using ERP.API.Models.AssettGetResponse;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -35,9 +39,9 @@ namespace ERP.API.Controllers
                     p.FirstName.Contains(searchValue) ||
                     p.LastName.Contains(searchValue) ||
                     p.Salary.ToString().Contains(searchValue) ||
-                    p.DOB.ToString().Contains(searchValue) ||   
+                    p.DOB.ToString().Contains(searchValue) ||
                     p.CNIC.Contains(searchValue) ||
-                    p.ContractDate.ToString().Contains(searchValue) 
+                    p.ContractDate.ToString().Contains(searchValue)
                 );
             }
 
@@ -49,26 +53,21 @@ namespace ERP.API.Controllers
 
             var employees = await query.ToListAsync();
 
-            var result = employees.Select(p => new
+            var result = employees.Select(p => new EmployeeGetResponseVM
             {
-                p.Id,
-                p.FirstName,
-                p.LastName,
-                EmployeeContcts = p.EmployeeContacts.Select(e => new { e.Id, e.Address, e.Website, e.PhoneNumber, e.Email })
+                Id = p.Id,
+                FirstName = p.FirstName,
+                LastName = p.LastName,
+                Contacts = p.EmployeeContacts.Select(e => new EmployeeContactGetResponseVM { Id = e.Id, Email = e.Email, PhoneNumber = e.PhoneNumber, Website = e.Website, Address = e.Address, }).ToList()
             }).ToList();
 
+
+            var paginationResult = new PaginatedResult<EmployeeGetResponseVM>(result, totalCount);
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = new
-                {
-                    TotalCount = totalCount,
-                    PageSize = pageSize,
-                    CurrentPage = pageNumber,
-                    SearchValue = searchValue,
-                    Results = result
-                }
+                data = paginationResult
             });
         }
 

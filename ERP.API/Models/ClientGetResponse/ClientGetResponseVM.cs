@@ -1,4 +1,6 @@
-﻿namespace ERP.API.Models.ClientGetResponse
+﻿using ERP.API.Models.ClientContactResponse;
+
+namespace ERP.API.Models.ClientGetResponse
 {
     public class ClientGetResponseVM
     {
@@ -7,6 +9,6 @@
 
         public string LastName { get; set; }
 
-        public List<ClientContacts.ClientContactPutVM> contacts { get; set; }
+        public List<ClientContactGetResponseVM> contacts { get; set; }
     }
 }

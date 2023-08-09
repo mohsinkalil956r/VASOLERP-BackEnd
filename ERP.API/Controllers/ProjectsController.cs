@@ -4,6 +4,9 @@ using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
 using ERP.API.Models;
+using ERP.API.Models.ProjectGetResponse;
+using ERP.API.Models.ClientGetResponse;
+using ERP.API.Models.ExpenseGetReponse;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -44,33 +47,26 @@ namespace ERP.API.Controllers
 
             var clients = await query.ToListAsync();
 
-            var result = clients.Select(p => new
+            var result = clients.Select(p => new ProjectGetResponseVM
             {
-                p.Id,
-                p.Name,
-                p.Description,
-                p.StartDate, p.DeadLine,
-                p.Budget,
-               Client = new
+                Id=p.Id,
+             Name=   p.Name,
+              Description=  p.Description,
+              StartDate=  p.StartDate,
+              DeadLine=  p.DeadLine,
+             Budget=   p.Budget,
+               Client = new ClientGetResponseVM
                {
-                   p.Client.FirstName,
-                    Country = p.Client.ClientContacts.Select(c => c.Country).FirstOrDefault() // Get the first Country associated with the ClientContact
-
-                       },
+                FirstName=   p.Client.FirstName,
+                   },
                }).ToList();
 
+            var paginationResult = new PaginatedResult<ProjectGetResponseVM>(result, totalCount);
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = new
-                {
-                    TotalCount = totalCount,
-                    PageSize = pageSize,
-                    CurrentPage = pageNumber,
-                    SearchValue = searchValue,
-                    Results = result
-                }
+                data = paginationResult
             });
         }
 

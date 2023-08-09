@@ -54,7 +54,7 @@ namespace ERP.API.Controllers
                 Employee = new EmployeeGetResponseVM { FirstName = p.Employee.FirstName, LastName = p.Employee.LastName }
             }).ToList();
 
-            var paginationResult = new PaginatedResult<ClientContactGetResponseVM>(result, totalCount);
+            var paginationResult = new PaginatedResult<EmployeeContactGetResponseVM>(result, totalCount);
             return Ok(new APIResponse<object>
             {
                 IsError = false,
