@@ -1,6 +1,8 @@
 ﻿using ERP.API.Models;
 using ERP.API.Models.Client;
 using ERP.API.Models.DepartmentController;
+using ERP.API.Models.DepartmentGetResponse;
+using ERP.API.Models.ExpenseGetReponse;
 using ERP.API.Models.PaymentModes;
 using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
@@ -24,15 +26,15 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IActionResult> Get(string? searchValue="", int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> Get(string? searchQuery="", int pageNumber = 1, int pageSize = 10)
         {
-            var departments = this._repository.Get();
+            var departments = this._repository.Get().AsQueryable() ;
 
-            // Apply search filter if searchValue is provided
+            // Apply search filter if searchQuery is provided
 
-            if (!string.IsNullOrEmpty(searchValue))
+            if (!string.IsNullOrEmpty(searchQuery))
             {
-                departments = departments.Where(p => p.Name.Contains(searchValue));
+                departments = departments.Where(p => p.Name.Contains(searchQuery));
             }
 
             // Get the total count of departments without pagination
@@ -44,12 +46,12 @@ namespace ERP.API.Controllers
 
             var department = await departments.ToListAsync();
 
-            var result = department.Select(p => new
+            var result = department.Select(p => new DepartmentGetPresponseVM
             {
-                p.Id,
-                p.Name,
+              Id=  p.Id,
+              Name=  p.Name,
             }).ToList();
-
+            var paginationResult = new PaginatedResult<DepartmentGetPresponseVM>(result, totalCount);
             return Ok(new APIResponse<object>
             {
                 IsError = false,
@@ -59,7 +61,7 @@ namespace ERP.API.Controllers
                     TotalCount = totalCount,
                     PageSize = pageSize,
                     CurrentPage = pageNumber,
-                    SearchValue = searchValue,
+                    searchQuery = searchQuery,
                     Results = result
                 }
             });

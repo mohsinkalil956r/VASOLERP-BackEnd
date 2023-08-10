@@ -27,7 +27,7 @@ namespace ERP.API.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> Get(string? searchValue = "", int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> Get(string? searchQuery = "", int pageNumber = 1, int pageSize = 10)
         {
             var employeeContacts = await this._employeeContact.Get()
                 .Include(e => e.Employee).ThenInclude(d => d.Department)
@@ -59,13 +59,13 @@ namespace ERP.API.Controllers
             // Concatenate employeeContacts and clientContacts into a single list
             var mergeLists = employeeContacts.Concat(clientContacts).ToList();
 
-            // Apply search filter if searchValue is provided and not null or empty
-            if (!string.IsNullOrEmpty(searchValue))
+            // Apply search filter if searchQuery is provided and not null or empty
+            if (!string.IsNullOrEmpty(searchQuery))
             {
                 mergeLists = mergeLists.Where(p =>
-                    p.Id.ToString().Contains(searchValue) || // Assuming Id is an integer; convert to string for search
-                    p.FirstName.Contains(searchValue) ||
-                    p.LastName.Contains(searchValue)
+                    p.Id.ToString().Contains(searchQuery) || // Assuming Id is an integer; convert to string for search
+                    p.FirstName.Contains(searchQuery) ||
+                    p.LastName.Contains(searchQuery)
                 ).ToList();
             }
 
