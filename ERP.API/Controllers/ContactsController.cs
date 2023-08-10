@@ -1,5 +1,7 @@
 ﻿using AutoMapper.Internal;
 using ERP.API.Models;
+using ERP.API.Models.ContactsGetResponseVM;
+using ERP.API.Models.ExpenseGetReponse;
 using ERP.DAL.Repositories.Abstraction;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -73,28 +75,23 @@ namespace ERP.API.Controllers
             // Apply pagination
             mergeLists = mergeLists.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
 
-            var result = mergeLists.Select(p => new
+            var result = mergeLists.Select(p => new ContactsGetResponseVM
             {
-                p.Id,
-                p.FirstName,
-                p.LastName,
-                p.DepartmentName,
-                p.PhoneNumber,
-                p.Type // Include the Type in the result
+               Id = p.Id,
+               FirstName = p.FirstName,
+               LastName = p.LastName,
+               DepartmentName = p.DepartmentName,
+               PhoneNumber = p.PhoneNumber,
+               Type = p.Type // Include the Type in the result
             }).ToList();
+
+            var paginationResult = new PaginatedResult<ContactsGetResponseVM>(result, totalCount);
 
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = new
-                {
-                    TotalCount = totalCount,
-                    PageSize = pageSize,
-                    CurrentPage = pageNumber,
-                    searchQuery = searchQuery,
-                    Results = result
-                }
+                data = paginationResult
             });
         }
 

@@ -1,5 +1,7 @@
 ﻿using ERP.API.Models;
+using ERP.API.Models.ExpenseGetReponse;
 using ERP.API.Models.ExpenseType;
+using ERP.API.Models.ExpenseTypeGetResponse;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
 using Microsoft.AspNetCore.Http;
@@ -20,20 +22,31 @@ namespace ERP.API.Controllers
             
         }
 
-        // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IActionResult> Get() {
-            var expenseType = await this._repository.Get().ToListAsync();
+        public async Task<IActionResult> Get(string? searchValue="", int pageNumber=1, int pageSize=10) {
+            var query = this._repository
+                .Get()
+                .AsQueryable();
+            if (!string.IsNullOrEmpty(searchValue))
+            {
+                query = query.Where(e =>
+                e.Name.Contains(searchValue));
+            }
+            var totalCount = await query.CountAsync();
+            query = query.Skip((pageNumber-1)*pageSize).Take(pageSize);
+            var expenseType = await query.ToListAsync();
+            var result = expenseType.Select(e => new ExpenseTypeGetResponseVM
+            {
+                Id = e.Id,
+                Name = e.Name
+            }).ToList();
+            var pagginatedResult = new PaginatedResult<ExpenseTypeGetResponseVM>(result, totalCount);
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = expenseType.Select(x => new
-                {
-                    id = x.Id,
-                    Name = x.Name,
-                })
-            });
+                data = pagginatedResult
+            }); ;
         }
 
         // GET api/<ValuesController>/5

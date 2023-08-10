@@ -25,7 +25,7 @@ namespace ERP.API.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(string? searchQuery = "", int pageNumber = 1, int pageSize = 10)
         {
-            var query =  this._repository.Get().Include(c => c.Client.ClientContacts).Include(c => c.Status).AsQueryable();
+            var query =  this._repository.Get().Include(c => c.Client).Include(c => c.Status).AsQueryable();
 
             // Apply search filter if searchQuery is provided and not null or empty
             if (!string.IsNullOrEmpty(searchQuery))
@@ -98,6 +98,7 @@ namespace ERP.API.Controllers
                     DeadLine = model.DeadLine,
                     Description = model.Description,
                     Name = model.Name,
+                    Location= model.Location,
                     StartDate = model.StartDate,
                     StatusId=model.StatusId,
                     ProjectEmployees = model.EmployeeIds.Select(x => new ProjectEmployee { EmployeeId = x }).ToList()
@@ -133,6 +134,7 @@ namespace ERP.API.Controllers
                 project.Description = model.Description; 
                 project.Name = model.Name;
                 project.Budget = model.Budget;
+                project.Location = model.Location;
                 project.ClientId = model.ClientId;
                 project.StatusId = model.StatusId;
                 this._repository.Update(project);
