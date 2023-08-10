@@ -16,6 +16,8 @@ namespace ERP.DAL.DB.Entities
         public DateTime DeadLine { get; set; }
         public double Budget { get; set; }
 
+        public string Location { get; set; }
+
         public int ClientId { get; set; }
       
         public int StatusId { get; set; }
