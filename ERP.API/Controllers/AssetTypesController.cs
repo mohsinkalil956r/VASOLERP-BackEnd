@@ -27,13 +27,13 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IActionResult> Get(string? searchValue = "", int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> Get(string? searchQuery = "", int pageNumber = 1, int pageSize = 10)
         {
             var query =  this._repository.Get().AsQueryable();
-            if (!string.IsNullOrEmpty(searchValue))
+            if (!string.IsNullOrEmpty(searchQuery))
             {
                 query = query.Where(e =>
-                    e.Name.Contains(searchValue) 
+                    e.Name.Contains(searchQuery) 
                  
                 );
             }

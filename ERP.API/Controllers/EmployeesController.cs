@@ -28,20 +28,20 @@ namespace ERP.API.Controllers
         }
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IActionResult> Get(string? searchValue = "", int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> Get(string? searchQuery = "", int pageNumber = 1, int pageSize = 10)
         {
             var query = this._repository.Get().Include(p => p.EmployeeContacts).AsQueryable();
 
-            // Apply search filter if searchValue is provided and not null or empty
-            if (!string.IsNullOrEmpty(searchValue))
+            // Apply search filter if searchQuery is provided and not null or empty
+            if (!string.IsNullOrEmpty(searchQuery))
             {
                 query = query.Where(p =>
-                    p.FirstName.Contains(searchValue) ||
-                    p.LastName.Contains(searchValue) ||
-                    p.Salary.ToString().Contains(searchValue) ||
-                    p.DOB.ToString().Contains(searchValue) ||
-                    p.CNIC.Contains(searchValue) ||
-                    p.ContractDate.ToString().Contains(searchValue)
+                    p.FirstName.Contains(searchQuery) ||
+                    p.LastName.Contains(searchQuery) ||
+                    p.Salary.ToString().Contains(searchQuery) ||
+                    p.DOB.ToString().Contains(searchQuery) ||
+                    p.CNIC.Contains(searchQuery) ||
+                    p.ContractDate.ToString().Contains(searchQuery)
                 );
             }
 

@@ -26,15 +26,15 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IActionResult> Get(string? searchValue="", int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> Get(string? searchQuery="", int pageNumber = 1, int pageSize = 10)
         {
             var departments = this._repository.Get().AsQueryable() ;
 
-            // Apply search filter if searchValue is provided
+            // Apply search filter if searchQuery is provided
 
-            if (!string.IsNullOrEmpty(searchValue))
+            if (!string.IsNullOrEmpty(searchQuery))
             {
-                departments = departments.Where(p => p.Name.Contains(searchValue));
+                departments = departments.Where(p => p.Name.Contains(searchQuery));
             }
 
             // Get the total count of departments without pagination
@@ -61,7 +61,7 @@ namespace ERP.API.Controllers
                     TotalCount = totalCount,
                     PageSize = pageSize,
                     CurrentPage = pageNumber,
-                    SearchValue = searchValue,
+                    searchQuery = searchQuery,
                     Results = result
                 }
             });
