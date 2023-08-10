@@ -7,6 +7,8 @@ using ERP.API.Models.AssetType;
 using System.Runtime.CompilerServices;
 using ERP.API.Models;
 using ERP.API.Models.PaymentModes;
+using System.Runtime.InteropServices;
+using ERP.API.Models.PaymentModeGetResponse;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -24,20 +26,32 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(string? searchValue = "", int pageNumber = 1, int pageSize = 10)
         {
-            //Done Refectoring
-            var paymentMode = await this._repository.Get().ToListAsync();
-            return Ok(new APIResponse<object>
+            var query = this._repository
+                .Get()
+                .AsQueryable();
+            if(!string.IsNullOrEmpty(searchValue))
             {
-                IsError = false,
-                Message = "",
-                data = paymentMode.Select(x => new
+                query = query.Where(p =>
+                p.Name.Contains(searchValue));
+            }
+            var totalCount = await query.CountAsync();
+            query = query.Skip((pageNumber-1)*pageSize).Take(pageSize);
+            var paymentmode = await query.ToListAsync();
+            var result = paymentmode.Select(p => new PaymentModeGetResponseVM
+            {
+                Id = p.Id,
+                Name = p.Name
+            }).ToList();
+            var pagginatedResult = new PaginatedResult<PaymentModeGetResponseVM>(result, totalCount);
+            return Ok(
+                new APIResponse<object>
                 {
-                    Id = x.Id,
-                    Name = x.Name,
-                })
-            });
+                    IsError = false,
+                    Message = "",
+                    data = pagginatedResult
+                });
         }
 
         // GET api/<ValuesController>/5
