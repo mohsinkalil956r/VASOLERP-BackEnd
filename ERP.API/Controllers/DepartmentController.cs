@@ -165,6 +165,20 @@ namespace ERP.API.Controllers
             }
             return NotFound();
         }
+        [Route("entityexists/{data}")]
+        [HttpGet]
+        public async Task<bool> EntityExists(string data)
+        {
+            var userEntity = await this._repository.Get().Where(u => u.Name == data.ToLower()).FirstOrDefaultAsync();
+            if (userEntity != null)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
     }
 }
