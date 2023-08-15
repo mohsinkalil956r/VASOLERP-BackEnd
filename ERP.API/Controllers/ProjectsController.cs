@@ -4,6 +4,9 @@ using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
 using ERP.API.Models;
+using ERP.API.Models.ProjectGetResponse;
+using ERP.API.Models.ClientGetResponse;
+using ERP.API.Models.ExpenseGetReponse;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -20,19 +23,19 @@ namespace ERP.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get(string? searchValue = "", int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> Get(string? searchQuery = "", int pageNumber = 1, int pageSize = 10)
         {
-            var query =  this._repository.Get().Include(c => c.Client.ClientContacts).Include(c => c.Status).AsQueryable();
+            var query =  this._repository.Get().Include(c => c.Client).Include(c => c.Status).AsQueryable();
 
-            // Apply search filter if searchValue is provided and not null or empty
-            if (!string.IsNullOrEmpty(searchValue))
+            // Apply search filter if searchQuery is provided and not null or empty
+            if (!string.IsNullOrEmpty(searchQuery))
             {
                 query = query.Where(p =>
-                    p.Name.Contains(searchValue) ||
-                    p.Description.Contains(searchValue)||
-                    p.StartDate.ToString().Contains(searchValue) ||
-                    p.DeadLine.ToString().Contains(searchValue)||
-                    p.Budget.ToString().Contains(searchValue)
+                    p.Name.Contains(searchQuery) ||
+                    p.Description.Contains(searchQuery)||
+                    p.StartDate.ToString().Contains(searchQuery) ||
+                    p.DeadLine.ToString().Contains(searchQuery)||
+                    p.Budget.ToString().Contains(searchQuery)
                     );
             }
 
@@ -44,33 +47,26 @@ namespace ERP.API.Controllers
 
             var clients = await query.ToListAsync();
 
-            var result = clients.Select(p => new
+            var result = clients.Select(p => new ProjectGetResponseVM
             {
-                p.Id,
-                p.Name,
-                p.Description,
-                p.StartDate, p.DeadLine,
-                p.Budget,
-               Client = new
+                Id=p.Id,
+             Name=   p.Name,
+              Description=  p.Description,
+              StartDate=  p.StartDate,
+              DeadLine=  p.DeadLine,
+             Budget=   p.Budget,
+               Client = new ClientGetResponseVM
                {
-                   p.Client.FirstName,
-                    Country = p.Client.ClientContacts.Select(c => c.Country).FirstOrDefault() // Get the first Country associated with the ClientContact
-
-                       },
+                FirstName=   p.Client.FirstName,
+                   },
                }).ToList();
 
+            var paginationResult = new PaginatedResult<ProjectGetResponseVM>(result, totalCount);
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = new
-                {
-                    TotalCount = totalCount,
-                    PageSize = pageSize,
-                    CurrentPage = pageNumber,
-                    SearchValue = searchValue,
-                    Results = result
-                }
+                data = paginationResult
             });
         }
 
@@ -102,6 +98,7 @@ namespace ERP.API.Controllers
                     DeadLine = model.DeadLine,
                     Description = model.Description,
                     Name = model.Name,
+                    Location= model.Location,
                     StartDate = model.StartDate,
                     StatusId=model.StatusId,
                     ProjectEmployees = model.EmployeeIds.Select(x => new ProjectEmployee { EmployeeId = x }).ToList()
@@ -137,6 +134,7 @@ namespace ERP.API.Controllers
                 project.Description = model.Description; 
                 project.Name = model.Name;
                 project.Budget = model.Budget;
+                project.Location = model.Location;
                 project.ClientId = model.ClientId;
                 project.StatusId = model.StatusId;
                 this._repository.Update(project);

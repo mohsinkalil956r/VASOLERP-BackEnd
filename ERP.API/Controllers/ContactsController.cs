@@ -1,5 +1,7 @@
 ﻿using AutoMapper.Internal;
 using ERP.API.Models;
+using ERP.API.Models.ContactsGetResponseVM;
+using ERP.API.Models.ExpenseGetReponse;
 using ERP.DAL.Repositories.Abstraction;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +27,7 @@ namespace ERP.API.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> Get(string? searchValue = "", int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> Get(string? searchQuery = "", int pageNumber = 1, int pageSize = 10)
         {
             var employeeContacts = await this._employeeContact.Get()
                 .Include(e => e.Employee).ThenInclude(d => d.Department)
@@ -57,13 +59,13 @@ namespace ERP.API.Controllers
             // Concatenate employeeContacts and clientContacts into a single list
             var mergeLists = employeeContacts.Concat(clientContacts).ToList();
 
-            // Apply search filter if searchValue is provided and not null or empty
-            if (!string.IsNullOrEmpty(searchValue))
+            // Apply search filter if searchQuery is provided and not null or empty
+            if (!string.IsNullOrEmpty(searchQuery))
             {
                 mergeLists = mergeLists.Where(p =>
-                    p.Id.ToString().Contains(searchValue) || // Assuming Id is an integer; convert to string for search
-                    p.FirstName.Contains(searchValue) ||
-                    p.LastName.Contains(searchValue)
+                    p.Id.ToString().Contains(searchQuery) || // Assuming Id is an integer; convert to string for search
+                    p.FirstName.Contains(searchQuery) ||
+                    p.LastName.Contains(searchQuery)
                 ).ToList();
             }
 
@@ -73,28 +75,23 @@ namespace ERP.API.Controllers
             // Apply pagination
             mergeLists = mergeLists.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
 
-            var result = mergeLists.Select(p => new
+            var result = mergeLists.Select(p => new ContactsGetResponseVM
             {
-                p.Id,
-                p.FirstName,
-                p.LastName,
-                p.DepartmentName,
-                p.PhoneNumber,
-                p.Type // Include the Type in the result
+               Id = p.Id,
+               FirstName = p.FirstName,
+               LastName = p.LastName,
+               DepartmentName = p.DepartmentName,
+               PhoneNumber = p.PhoneNumber,
+               Type = p.Type // Include the Type in the result
             }).ToList();
+
+            var paginationResult = new PaginatedResult<ContactsGetResponseVM>(result, totalCount);
 
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = new
-                {
-                    TotalCount = totalCount,
-                    PageSize = pageSize,
-                    CurrentPage = pageNumber,
-                    SearchValue = searchValue,
-                    Results = result
-                }
+                data = paginationResult
             });
         }
 

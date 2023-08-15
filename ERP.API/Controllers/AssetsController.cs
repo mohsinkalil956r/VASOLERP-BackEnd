@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
 using ERP.API.Models.Assets;
 using ERP.API.Models;
+using ERP.API.Models.AssetTypeGetResponse;
+using ERP.API.Models.AssettGetResponse;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -48,18 +49,18 @@ namespace ERP.API.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> Get(string? searchValue = "", int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> Get(string? searchQuery = "", int pageNumber = 1, int pageSize = 10)
         {
             var query = this._repository.Get().Include(p => p.AssetType).AsQueryable();
 
-            // Apply search filter if searchValue is provided and not null or empty
-            if (!string.IsNullOrEmpty(searchValue))
+            // Apply search filter if searchQuery is provided and not null or empty
+            if (!string.IsNullOrEmpty(searchQuery))
             {
                 query = query.Where(p =>
-                    p.Name.Contains(searchValue) ||
-                    p.Description.Contains(searchValue) ||
-                    p.PurchaseDate.ToString().Contains(searchValue) ||
-                    p.PurchasePrice.ToString().Contains(searchValue)
+                    p.Name.Contains(searchQuery) ||
+                    p.Description.Contains(searchQuery) ||
+                    p.PurchaseDate.ToString().Contains(searchQuery) ||
+                    p.PurchasePrice.ToString().Contains(searchQuery)
                     );
             }
 
@@ -71,29 +72,17 @@ namespace ERP.API.Controllers
 
             var assets = await query.ToListAsync();
 
-            var result = assets.Select(p => new
-            {
-                p.Name,
-                p.Description,
-                p.PurchaseDate,
-                p.PurchasePrice,
+            var result = assets.Select(p => new AssetGetResponseVM
+            {Id= p.Id, Name=p.Name,Description= p.Description,PurchaseDate= p.PurchaseDate, PurchasePrice=p.PurchasePrice,
 
-                AssetType = new { p.AssetType.Id, p.AssetType.Name },
+                AssetType =  new AssetTypeGetResponseVM {Id= p.AssetTypeId, Name=p.AssetType.Name },
             }).ToList();
-
-
+            var paginationResult = new PaginatedResult<AssetGetResponseVM>(result, totalCount);
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = new
-                {
-                    TotalCount = totalCount,
-                    PageSize = pageSize,
-                    CurrentPage = pageNumber,
-                    SearchValue = searchValue,
-                    Results = result
-                }
+                data = paginationResult
             });
         }
 

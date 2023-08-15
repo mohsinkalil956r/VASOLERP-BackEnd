@@ -6,6 +6,10 @@ using ERP.DAL.Repositories.Abstraction;
 using ERP.API.Models.AssetType;
 using System.Runtime.CompilerServices;
 using ERP.API.Models;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using ERP.API.Models.ExpenseGetReponse;
+using ERP.API.Models.ExpenseTypeGetResponse;
+using ERP.API.Models.AssetTypeGetResponse;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -23,18 +27,31 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(string? searchQuery = "", int pageNumber = 1, int pageSize = 10)
         {
-            var assetType = await this._repository.Get().ToListAsync();
+            var query =  this._repository.Get().AsQueryable();
+            if (!string.IsNullOrEmpty(searchQuery))
+            {
+                query = query.Where(e =>
+                    e.Name.Contains(searchQuery) 
+                 
+                );
+            }
+            var totalCount = await query.CountAsync();
+
+            query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            var assetType = await query.ToListAsync();
+            var result = assetType.Select(x => new AssetTypeGetResponseVM
+            {
+                Id = x.Id,
+                Name = x.Name,
+            }).ToList();
+            var paginationResult = new PaginatedResult<AssetTypeGetResponseVM>(result, totalCount);
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = assetType.Select(x => new
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                })
+                data = paginationResult
             });
         }
 

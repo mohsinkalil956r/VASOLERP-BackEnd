@@ -6,6 +6,8 @@ using ERP.DAL.Repositories.Abstraction;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using ERP.API.Models.AssetTypeGetResponse;
+using ERP.API.Models.StatusGetResponse;
 
 namespace ERP.API.Controllers
 {
@@ -22,21 +24,35 @@ namespace ERP.API.Controllers
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(string? searchQuery = "", int pageNumber = 1, int pageSize = 10)
         {
-            var status = await this._repository.Get().ToListAsync();
+            var query =  this._repository.Get().AsQueryable();
+            if (!string.IsNullOrEmpty(searchQuery))
+            {
+                query = query.Where(e =>
+                    e.Name.Contains(searchQuery)
+
+                );
+            }
+            var totalCount = await query.CountAsync();
+
+            query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            var status = await query.ToListAsync();
+            var result = status.Select(x => new StatusGetResponseVM
+            {
+                Id = x.Id,
+                Name = x.Name,
+                IsProgress = x.IsProgress,
+                Progress = x.Progress,
+
+            }).ToList();
+            var paginationResult = new PaginatedResult<StatusGetResponseVM>(result, totalCount);
+
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = status.Select(x => new
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    IsProgress = x.IsProgress,
-                    Progress = x.Progress,
-
-                })
+                data = paginationResult
             });
         }
 
