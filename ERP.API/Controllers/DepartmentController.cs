@@ -34,7 +34,11 @@ namespace ERP.API.Controllers
 
             if (!string.IsNullOrEmpty(searchQuery))
             {
-                departments = departments.Where(p => p.Name.Contains(searchQuery));
+                departments = departments.Where(p =>
+                     p.Name.Contains(searchQuery) ||
+                     p.Dob.Contains(searchQuery)
+                     );
+
             }
 
             // Get the total count of departments without pagination
@@ -50,6 +54,7 @@ namespace ERP.API.Controllers
             {
               Id=  p.Id,
               Name=  p.Name,
+              Dob = p.Dob,
             }).ToList();
             var paginationResult = new PaginatedResult<DepartmentGetPresponseVM>(result, totalCount);
             return Ok(new APIResponse<object>
@@ -83,7 +88,9 @@ namespace ERP.API.Controllers
                         data = new
                         {
                             Id = department.Id,
-                            name = department.Name
+                            name = department.Name,
+                            department.Dob
+                            
                         }
                     };
                     return Ok(apiresponse);
@@ -106,6 +113,7 @@ namespace ERP.API.Controllers
             var departments = new Department
             {
                 Name = department.Name,
+                Dob = department.Dob,
                
             };
             _repository.Add(departments);
@@ -117,7 +125,9 @@ namespace ERP.API.Controllers
                 data = new
                 {
                     departments.Id, 
-                    departments.Name
+                    departments.Name,
+                    department.Dob
+                 
                 }
             });
         }
@@ -134,6 +144,7 @@ namespace ERP.API.Controllers
             {
                 
                 department.Name = departments.Name;
+                department.Dob= departments.Dob;
                 this._repository.Update(department);
                 await this._repository.SaveChanges();
 
