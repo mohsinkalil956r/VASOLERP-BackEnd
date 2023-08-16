@@ -8,7 +8,13 @@ namespace ERP.API.Models.Client
 
         public string LastName { get; set; }
 
-        public List<ClientContacts.ClientContactPutVM> contacts { get; set; }
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Website { get; set; }
+        public string Address { get; set; }
+        public string Country { get; set; }
+
+        //public List<ClientContacts.ClientContactPutVM> contacts { get; set; }
 
     }
 }

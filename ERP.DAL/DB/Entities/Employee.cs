@@ -19,14 +19,17 @@ namespace ERP.DAL.DB.Entities
 
         public int DepartmentId { get; set; }
 
-        public DateTime ContractDate { get; set; }  
+        public DateTime ContractDate { get; set; }
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Website { get; set; }
+        public string Address { get; set; }
 
         public Department Department { get; set; }
         public List<Project> Projects { get; set; } = new();
         public List<ProjectEmployee> ProjectEmployees { get; set; } = new();
         public List<AssetIssuance> AssetIssuances { get; set; } = new();
         public List<Asset> Assets { get; set; } = new();
-        public virtual ICollection<EmployeeContact> EmployeeContacts { get; set; }
 
 
     }

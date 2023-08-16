@@ -11,6 +11,6 @@ namespace ERP.API.Models.ClientContactResponse
         public string Address { get; set; }
         public string Country { get; set; }
 
-        public ClientGetResponseVM Client { get; set; }
+        //public ClientGetResponseVM Client { get; set; }
     }
 }

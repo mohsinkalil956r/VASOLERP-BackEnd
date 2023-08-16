@@ -51,7 +51,7 @@ namespace ERP.API.Controllers
                 Address = p.Address,
                 Website = p.Website,
                
-                Employee = new EmployeeGetResponseVM { FirstName = p.Employee.FirstName, LastName = p.Employee.LastName }
+                //Employee = new EmployeeGetResponseVM { FirstName = p.Employee.FirstName, LastName = p.Employee.LastName }
             }).ToList();
 
             var paginationResult = new PaginatedResult<EmployeeContactGetResponseVM>(result, totalCount);

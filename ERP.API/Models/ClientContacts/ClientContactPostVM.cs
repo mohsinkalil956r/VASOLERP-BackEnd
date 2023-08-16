@@ -9,6 +9,6 @@
         public string Address { get; set; }
         public string Country { get; set; }
 
-        public int ClientId { get; set; }
+        //public int ClientId { get; set; }
     }
 }

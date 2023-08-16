@@ -9,6 +9,6 @@ namespace ERP.API.Models.EmployeeContactGetResponse
         public string PhoneNumber { get; set; }
         public string Website { get; set; }
         public string Address { get; set; }
-        public EmployeeGetResponseVM  Employee { get; set; }
+        //public EmployeeGetResponseVM  Employee { get; set; }
     }
 }

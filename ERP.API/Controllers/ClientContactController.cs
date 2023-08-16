@@ -56,7 +56,7 @@ namespace ERP.API.Controllers
                 Address = p.Address,
                 Website = p.Website,
                 Country = p.Country,
-                Client = new ClientGetResponseVM { FirstName = p.Client.FirstName, LastName = p.Client.LastName }
+                //Client = new ClientGetResponseVM { FirstName = p.Client.FirstName, LastName = p.Client.LastName }
             }).ToList();
 
             var paginationResult = new PaginatedResult<ClientContactGetResponseVM>(result, totalCount);
@@ -86,7 +86,7 @@ namespace ERP.API.Controllers
                         Address = clientcontact.Address,
                         Email = clientcontact.Email,
                         Website = clientcontact.Website,
-                        ClientId = clientcontact.ClientId,
+                        //ClientId = clientcontact.ClientId,
                         Country = clientcontact.Country
                     }
                 };
@@ -104,7 +104,7 @@ namespace ERP.API.Controllers
             }
             var clientContact = new ClientContact
             {
-                ClientId = clientcontacts.ClientId,
+                //ClientId = clientcontacts.ClientId,
                 PhoneNumber = clientcontacts.PhoneNumber,
                 Address = clientcontacts.Address,
                 Email = clientcontacts.Email,
@@ -120,7 +120,7 @@ namespace ERP.API.Controllers
                 Message = "",
                 data = new
                 {
-                    clientcontacts.ClientId,
+                   // clientcontacts.ClientId,
                     clientcontacts.PhoneNumber,
                     clientcontacts.Address,
                     clientcontacts.Email,
@@ -142,7 +142,7 @@ namespace ERP.API.Controllers
 
             if (clientContact != null)
             {
-                clientContact.ClientId = clientcontacts.ClientId;
+               // clientContact.ClientId = clientcontacts.ClientId;
                 clientContact.PhoneNumber = clientcontacts.PhoneNumber;
                 clientContact.Address = clientcontacts.Address;
                 clientContact.Email = clientcontacts.Email;

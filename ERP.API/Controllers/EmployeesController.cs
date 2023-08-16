@@ -25,12 +25,13 @@ namespace ERP.API.Controllers
         public EmployeesController(IEmployeeRepository repository)
         {
             this._repository = repository;
+
         }
         // GET: api/<ValuesController>
         [HttpGet]
         public async Task<IActionResult> Get(string? searchQuery = "", int pageNumber = 1, int pageSize = 10)
         {
-            var query = this._repository.Get().Include(p => p.EmployeeContacts).AsQueryable();
+            var query = this._repository.Get().AsQueryable();
 
             // Apply search filter if searchQuery is provided and not null or empty
             if (!string.IsNullOrEmpty(searchQuery))
@@ -41,6 +42,12 @@ namespace ERP.API.Controllers
                     p.Salary.ToString().Contains(searchQuery) ||
                     p.DOB.ToString().Contains(searchQuery) ||
                     p.CNIC.Contains(searchQuery) ||
+
+                    p.Email.Contains(searchQuery) ||
+                    p.PhoneNumber.ToString().Contains(searchQuery) ||
+                    p.Website.Contains(searchQuery) ||
+                    p.Address.Contains(searchQuery) ||
+
                     p.ContractDate.ToString().Contains(searchQuery)
                 );
             }
@@ -58,7 +65,12 @@ namespace ERP.API.Controllers
                 Id = p.Id,
                 FirstName = p.FirstName,
                 LastName = p.LastName,
-                Contacts = p.EmployeeContacts.Select(e => new EmployeeContactGetResponseVM { Id = e.Id, Email = e.Email, PhoneNumber = e.PhoneNumber, Website = e.Website, Address = e.Address, }).ToList()
+                Email = p.Email,
+                PhoneNumber = p.PhoneNumber,
+                Website = p.Website,
+                Address = p.Address,
+
+                //Contacts = p.EmployeeContacts.Select(e => new EmployeeContactGetResponseVM { Id = e.Id, Email = e.Email, PhoneNumber = e.PhoneNumber, Website = e.Website, Address = e.Address, }).ToList()
             }).ToList();
 
 
@@ -75,7 +87,7 @@ namespace ERP.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-            var employee = await this._repository.Get(id).Include(p=>p.EmployeeContacts).FirstOrDefaultAsync();
+            var employee = await this._repository.Get(id).FirstOrDefaultAsync();
             if (employee != null)
             {
                 var apiResponse = new APIResponse<Object>
@@ -91,9 +103,12 @@ namespace ERP.API.Controllers
                         employee.DOB,
                         employee.CNIC,
                         employee.ContractDate,
-                       employee.EmployeeContacts,
-                       employee.Department,
-                       employee.IsActive,
+                        employee.Email,
+                        employee.PhoneNumber,
+                        employee.Website,
+                        employee.Address,
+                        employee.Department,
+                        employee.IsActive,
                      }
                 };
 
@@ -119,8 +134,12 @@ namespace ERP.API.Controllers
                 DOB = model.DOB,
                 CNIC = model.CNIC,
                 ContractDate=model.ContractDate,
-                DepartmentId=model.DepartmentId,
-                EmployeeContacts = model.Contacts.Select(x => new EmployeeContact { Address = x.Address ,Website=x.Website,PhoneNumber=x.PhoneNumber,Email=x.Email}).ToList() // Initialize the EmployeeContacts collection
+                Email = model.Email,
+                PhoneNumber = model.PhoneNumber,
+                Website = model.Website,
+                Address = model.Address,
+                DepartmentId =model.DepartmentId,
+                //EmployeeContacts = model.Contacts.Select(x => new EmployeeContact { Address = x.Address ,Website=x.Website,PhoneNumber=x.PhoneNumber,Email=x.Email}).ToList() // Initialize the EmployeeContacts collection
             };
 
             _repository.Add(employee);
@@ -138,6 +157,10 @@ namespace ERP.API.Controllers
                     employee.Salary,
                     employee.DOB,
                     employee.CNIC,
+                    employee.Email,
+                    employee.PhoneNumber,
+                    employee.Website,
+                    employee.Address,
                     employee.ContractDate,
                     employee.DepartmentId,
                 }
@@ -152,7 +175,7 @@ namespace ERP.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var employee = await this._repository.Get(id).Include(e=>e.EmployeeContacts).SingleOrDefaultAsync();
+            var employee = await this._repository.Get(id).SingleOrDefaultAsync();
 
             if (employee != null)
             {
@@ -161,21 +184,25 @@ namespace ERP.API.Controllers
                 employee.Salary = model.Salary;
                 employee.DOB = model.DOB;
                 employee.CNIC = model.CNIC;
+                employee.Email = model.CNIC;
+                employee.PhoneNumber = model.PhoneNumber;
+                employee.Website = model.Website;
+                employee.Address = model.Website;
                 employee.ContractDate = model.ContractDate;
                 employee.DepartmentId = model.DepartmentId;
 
-                var contactIds = model.Contacts.Select(x => x.Id).ToList();
+                //var contactIds = model.Contacts.Select(x => x.Id).ToList();
 
 
 
-                employee.EmployeeContacts.Where(x => contactIds.Contains(x.Id)).ToList().ForEach(contact =>
-                {
-                    var modelContact = model.Contacts.Where(x => x.Id == contact.Id).First();
-                    contact.PhoneNumber = modelContact.PhoneNumber;
-                    contact.Email = modelContact.Email;
-                    contact.Address = modelContact.Address;
-                    contact.Website = modelContact.Website;
-                });
+                //employee.EmployeeContacts.Where(x => contactIds.Contains(x.Id)).ToList().ForEach(contact =>
+                //{
+                //    var modelContact = model.Contacts.Where(x => x.Id == contact.Id).First();
+                //    contact.PhoneNumber = modelContact.PhoneNumber;
+                //    contact.Email = modelContact.Email;
+                //    contact.Address = modelContact.Address;
+                //    contact.Website = modelContact.Website;
+                //});
               
                
 
