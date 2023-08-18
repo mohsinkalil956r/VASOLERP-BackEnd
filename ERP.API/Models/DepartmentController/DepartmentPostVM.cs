@@ -4,6 +4,6 @@
     {
 
         public string Name { get; set; }
-        public string Dob { get; set; }
+        public string HOD { get; set; }
     }
 }

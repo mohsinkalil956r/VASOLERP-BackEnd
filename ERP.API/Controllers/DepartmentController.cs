@@ -36,7 +36,7 @@ namespace ERP.API.Controllers
             {
                 departments = departments.Where(p =>
                      p.Name.Contains(searchQuery) ||
-                     p.Dob.Contains(searchQuery)
+                     p.HOD.Contains(searchQuery)
                      );
 
             }
@@ -54,7 +54,7 @@ namespace ERP.API.Controllers
             {
               Id=  p.Id,
               Name=  p.Name,
-              Dob = p.Dob,
+              HOD = p.HOD,
             }).ToList();
             var paginationResult = new PaginatedResult<DepartmentGetPresponseVM>(result, totalCount);
             return Ok(new APIResponse<object>
@@ -89,7 +89,7 @@ namespace ERP.API.Controllers
                         {
                             Id = department.Id,
                             name = department.Name,
-                            department.Dob
+                            department.HOD
                             
                         }
                     };
@@ -113,7 +113,7 @@ namespace ERP.API.Controllers
             var departments = new Department
             {
                 Name = department.Name,
-                Dob = department.Dob,
+                HOD = department.HOD,
                
             };
             _repository.Add(departments);
@@ -126,7 +126,7 @@ namespace ERP.API.Controllers
                 {
                     departments.Id, 
                     departments.Name,
-                    department.Dob
+                    department.HOD
                  
                 }
             });
@@ -144,7 +144,7 @@ namespace ERP.API.Controllers
             {
                 
                 department.Name = departments.Name;
-                department.Dob= departments.Dob;
+                department.HOD= departments.HOD;
                 this._repository.Update(department);
                 await this._repository.SaveChanges();
 
