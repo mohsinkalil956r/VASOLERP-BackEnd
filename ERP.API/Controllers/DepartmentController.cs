@@ -61,15 +61,8 @@ namespace ERP.API.Controllers
             {
                 IsError = false,
                 Message = "",
-                data = new
-                {
-                    TotalCount = totalCount,
-                    PageSize = pageSize,
-                    CurrentPage = pageNumber,
-                    searchQuery = searchQuery,
-                    Results = result
-                }
-            });
+                data = paginationResult
+            }); 
         }
  
 
