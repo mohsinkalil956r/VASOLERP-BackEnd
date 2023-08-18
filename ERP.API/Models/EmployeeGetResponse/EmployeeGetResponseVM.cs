@@ -1,5 +1,7 @@
-﻿using ERP.API.Models.DepartmentController;
+﻿using ERP.API.Models.Contacts;
+using ERP.API.Models.DepartmentController;
 using ERP.API.Models.EmployeeContactGetResponse;
+using ERP.DAL.DB.Entities;
 
 namespace ERP.API.Models.EmployeeGetResponse
 {
@@ -13,13 +15,7 @@ namespace ERP.API.Models.EmployeeGetResponse
         public double Salary { get; set; }
 
         public DateTime ContractDate { get; set; }
-        public string Email { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Website { get; set; }
-        public string Address { get; set; }
 
         public DepartmentGetVM Department { get; set; }
-        //public List<EmployeeContactGetResponseVM> Contacts { get; set; }
-
     }
 }

@@ -1,7 +1,9 @@
 ﻿using AutoMapper.Internal;
 using ERP.API.Models;
+using ERP.API.Models.Contacts;
 using ERP.API.Models.ContactsGetResponseVM;
 using ERP.API.Models.ExpenseGetReponse;
+using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,83 +17,190 @@ namespace ERP.API.Controllers
     [ApiController]
     public class ContactsController : ControllerBase
     {
-        private readonly IEmployeeContactRepository _employeeContact;
+        private readonly IContactRepository _repository;
 
-        private readonly IClientContactRepository _clientContact;
-        public ContactsController(IEmployeeContactRepository employeeContact,
-            IClientContactRepository clientContact)
+        public ContactsController(IContactRepository repository)
         {
-            this._employeeContact = employeeContact;
-            this._clientContact = clientContact;
+            this._repository = repository;
         }
 
 
+
         [HttpGet]
-        public async Task<IActionResult> Get(string? searchQuery = "", int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> Get(string? searchValue = "", int pageNumber = 1, int pageSize = 10)
         {
-            var employeeContacts = await this._employeeContact.Get()
-                .Include(e => e.Employee).ThenInclude(d => d.Department)
-                .Select(e => new
-                {
-                    Type = "Employee",
-                    Id = e.EmployeeId, // Assuming EmployeeId is the unique identifier for employees
-                    FirstName = e.Employee.FirstName,
-                    LastName = e.Employee.LastName,
-                    e.PhoneNumber,
-                    DepartmentName = e.Employee.Department.Name,
+            var query = this._repository.Get()
+                .AsQueryable();
 
-                })
-                .ToListAsync();
-
-            var clientContacts = await this._clientContact.Get()
-                .Include(c => c.Client)
-                .Select(c => new
-                {
-                    Type = "Client",
-                    Id = c.ClientId, // Assuming ClientId is the unique identifier for clients
-                    FirstName = c.Client.FirstName,
-                    LastName = c.Client.LastName,
-                    c.PhoneNumber,
-                    DepartmentName="",
-                })
-                .ToListAsync();
-
-            // Concatenate employeeContacts and clientContacts into a single list
-            var mergeLists = employeeContacts.Concat(clientContacts).ToList();
-
-            // Apply search filter if searchQuery is provided and not null or empty
-            if (!string.IsNullOrEmpty(searchQuery))
+            // Apply search filter if searchValue is provided and not null or empty
+            if (!string.IsNullOrEmpty(searchValue))
             {
-                mergeLists = mergeLists.Where(p =>
-                    p.Id.ToString().Contains(searchQuery) || // Assuming Id is an integer; convert to string for search
-                    p.FirstName.Contains(searchQuery) ||
-                    p.LastName.Contains(searchQuery)
-                ).ToList();
+                query = query.Where(p =>
+                    p.Type.Contains(searchValue) ||
+                    p.Email.Contains(searchValue) ||
+                    p.PhoneNumber.Contains(searchValue) ||
+                    p.Website.Contains(searchValue) ||
+                    p.Address.Contains(searchValue) ||
+                    p.Country.Contains(searchValue)
+                    );
             }
 
             // Get the total count of items without pagination
-            var totalCount = mergeLists.Count;
+            var totalCount = await query.CountAsync();
 
             // Apply pagination
-            mergeLists = mergeLists.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+            query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
 
-            var result = mergeLists.Select(p => new ContactsGetResponseVM
+            var contacts = await query.ToListAsync();
+
+            var result = contacts.Select(p => new ContactsGetResponseVM
             {
-               Id = p.Id,
-               FirstName = p.FirstName,
-               LastName = p.LastName,
-               DepartmentName = p.DepartmentName,
+                Id = p.Id,
+               Type = p.Type,
+               Email = p.Email,
                PhoneNumber = p.PhoneNumber,
-               Type = p.Type // Include the Type in the result
-            }).ToList();
+               Website = p.Website,
+               Address = p.Address,
+               Country = p.Country,
 
-            var paginationResult = new PaginatedResult<ContactsGetResponseVM>(result, totalCount);
+            }).ToList();
 
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = paginationResult
+                data = new
+                {
+                    TotalCount = totalCount,
+                    PageSize = pageSize,
+                    CurrentPage = pageNumber,
+                    SearchValue = searchValue,
+                    Results = result
+                }
+            });
+        }
+
+
+        // GET api/<ValuesController>/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(int id)
+        {
+            var contacts = await this._repository.Get(id).FirstOrDefaultAsync();
+            if (contacts != null)
+            {
+                var apiResponse = new APIResponse<Object>
+                {
+                    IsError = false,
+                    Message = "",
+                    data = new
+                    {
+                        contacts.Type,
+                        contacts.Email,
+                        contacts.PhoneNumber,
+                        contacts.Website,
+                        contacts.Address,
+                        contacts.Country,
+
+                    }
+                };
+
+                return Ok(apiResponse);
+            }
+
+            return NotFound();
+        }
+
+
+        //POST api/<ValuesController>
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] ContactsPostVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            var contacts = new Contact
+            {
+                Type = model.Type,
+                Email = model.Email,
+                PhoneNumber = model.PhoneNumber,
+                Website = model.Website,
+                Address = model.Address,
+                Country = model.Country,
+
+            };
+
+            _repository.Add(contacts);
+            await _repository.SaveChanges();
+
+            return Ok(new APIResponse<Object>
+            {
+                IsError = false,
+                Message = "",
+                data = new
+                {
+                    contacts.Type,
+                    contacts.Email,
+                    contacts.PhoneNumber,
+                    contacts.Website,
+                    contacts.Address,
+                    contacts.Country
+                }
+            });
+
+        }
+
+
+        // PUT api/<ValuesController>/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(int id, [FromBody] ContactsPutVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var contacts = await this._repository.Get(id).SingleOrDefaultAsync();
+
+            if (contacts != null)
+            {
+                contacts.Email = model.Email;
+                contacts.PhoneNumber = model.PhoneNumber;
+                contacts.Website = model.Website;
+                contacts.Address = model.Address;
+                contacts.Country = model.Country;
+
+
+                this._repository.Update(contacts);
+                await this._repository.SaveChanges();
+
+                return Ok(new APIResponse<Object>
+                {
+                    IsError = false,
+                    Message = "",
+                });
+            }
+            return NotFound();
+
+        }
+
+
+        // DELETE api/<ValuesController>/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var contacts = await this._repository.Get(id).SingleOrDefaultAsync();
+            if (contacts != null)
+            {
+                contacts.IsActive = false;
+                await this._repository.SaveChanges();
+            }
+            return Ok(new APIResponse<object>
+            {
+                IsError = false,
+                Message = "",
+
             });
         }
 

@@ -10,6 +10,7 @@ using System.Linq;
 using ERP.API.Models.ClientGetResponse;
 using ERP.API.Models.ClientContactResponse;
 using ERP.API.Models.AssettGetResponse;
+using ERP.API.Models.ContactsGetResponseVM;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -20,10 +21,14 @@ namespace ERP.API.Controllers
     public class ClientsController : ControllerBase
     {
         private readonly IClientsRepository _repository;
-        public ClientsController(IClientsRepository repository)
+        private readonly IContactRepository _contact;
+
+        public ClientsController(IClientsRepository repository, IContactRepository contact)
         {
             this._repository = repository;
+            this._contact = contact;
         }
+
 
         // GET: api/<ValuesController>
         [HttpGet]
@@ -36,12 +41,7 @@ namespace ERP.API.Controllers
             {
                     query = query.Where(p =>
                     p.FirstName.Contains(searchQuery) ||
-                    p.LastName.Contains(searchQuery) ||
-                    p.Email.Contains(searchQuery) ||
-                    p.PhoneNumber.Contains(searchQuery) ||
-                    p.Website.Contains(searchQuery) ||
-                    p.Address.Contains(searchQuery) ||
-                    p.Country.Contains(searchQuery) 
+                    p.LastName.Contains(searchQuery)
 
                     );
             }
@@ -59,12 +59,7 @@ namespace ERP.API.Controllers
                 Id = p.Id,
                 FirstName = p.FirstName,
                 LastName = p.LastName,
-                Email = p.Email,
-                PhoneNumber = p.PhoneNumber,
-                Website = p.Website,
-                Address = p.Address,
-                Country = p.Country,
-                //contacts = p.ClientContacts.Select(e => new ClientContactGetResponseVM { Id = e.Id, Email = e.Email, PhoneNumber = e.PhoneNumber, Website = e.Website, Address = e.Address, Country = e.Country }).ToList()
+
             }).ToList();
 
             var paginationResult = new PaginatedResult<ClientGetResponseVM>(result, totalCount);
@@ -77,7 +72,7 @@ namespace ERP.API.Controllers
         }
 
 
-        // GET a    pi/<ValuesController>/5
+        // GET api/<ValuesController>/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
@@ -92,11 +87,6 @@ namespace ERP.API.Controllers
                     {
                         clients.FirstName,
                         clients.LastName,
-                        clients.Email,
-                        clients.PhoneNumber,
-                        clients.Website,
-                        clients.Address,
-                        clients.Country
 
                     }
                 };
@@ -107,6 +97,7 @@ namespace ERP.API.Controllers
             return NotFound();
         }
 
+
         // POST api/<ValuesController>
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] ClientPostVM model)
@@ -114,24 +105,32 @@ namespace ERP.API.Controllers
 
             if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(ModelState);
             }
 
             var clients = new Client
             {
                FirstName = model.FirstName,
                LastName = model.LastName,
-               Email = model.Email,
-               PhoneNumber = model.PhoneNumber,
-               Website = model.Website,
-               Address = model.Address,
-               Country = model.Country
 
-                //ClientContacts = model.contacts.Select(x => new ClientContact { Email = x.Email, PhoneNumber = x.PhoneNumber, Website = x.Website, Address = x.Address, Country = x.Country }).ToList()
             };
 
             _repository.Add(clients);
             await _repository.SaveChanges();
+
+            var contacts = new Contact
+            {
+                Type = "Client",
+                Email = model.Contact.Email,
+                PhoneNumber = model.Contact.PhoneNumber,
+                Website = model.Contact.Website,
+                Address = model.Contact.Address,
+                Country = model.Contact.Country
+            };
+
+            _contact.Add(contacts);
+            await _repository.SaveChanges();
+
 
             return Ok(new APIResponse<Object>
             {
@@ -142,11 +141,6 @@ namespace ERP.API.Controllers
                     clients.Id,
                     clients.FirstName,
                     clients.LastName,
-                    clients.Email,
-                    clients.PhoneNumber,
-                    clients.Website,
-                    clients.Address,
-                    clients.Country
 
                 }
             });
@@ -168,11 +162,6 @@ namespace ERP.API.Controllers
             {
                 client.FirstName = model.FirstName;
                 client.LastName = model.LastName;
-                client.Email = model.Email;
-                client.PhoneNumber = model.PhoneNumber;
-                client.Website = model.Website;
-                client.Address = model.Address;
-                client.Country = model.Country;
 
 
                 //var contactIds = model.contacts.Select(x => x.Id).ToList();
@@ -220,5 +209,7 @@ namespace ERP.API.Controllers
 
             });
         }
+
+
     }
 }

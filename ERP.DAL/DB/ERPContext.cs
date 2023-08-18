@@ -78,5 +78,6 @@ namespace ERP.DAL.DB
         public DbSet<Expense> Expenses { get; set; }
         public DbSet<ExpenseType> ExpenseTypes { get; set; }
         public DbSet<PaymentMode> PaymentModes { get; set; }
+        public DbSet<Contact> Contacts { get; set; }
     }
 }

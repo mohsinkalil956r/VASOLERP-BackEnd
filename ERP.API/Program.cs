@@ -90,6 +90,7 @@ public class Program
         builder.Services.AddTransient<IEmployeeRepository, EmployeeRepository>();
         builder.Services.AddTransient<IDepartmentRepository, DepartmentRepository>();
         builder.Services.AddTransient<IStatusesRepository, StatusesRepository>();
+        builder.Services.AddTransient<IContactRepository, ContactRepository>();
 
         builder.Services.AddAutoMapper(typeof(MapperProfile));
 

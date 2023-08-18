@@ -1,4 +1,7 @@
-﻿namespace ERP.API.Models.Employees
+﻿using ERP.API.Models.Contacts;
+using ERP.DAL.DB.Entities;
+
+namespace ERP.API.Models.Employees
 {
     public class EmployeePostVM
     {
@@ -10,12 +13,8 @@
         public double Salary { get; set; }
 
         public DateTime ContractDate { get; set; }
-        public string Email { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Website { get; set; }
-        public string Address { get; set; }
-
         public int DepartmentId { get; set; }
+        public ContactsPostVM Contact { get; set; }
 
     }
 }

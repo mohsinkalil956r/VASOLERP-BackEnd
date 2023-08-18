@@ -1,15 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ERP.API.Models.Projects;
 using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
-using ERP.API.Models.EmployeeContacts;
 using ERP.API.Models.Employees;
 using ERP.API.Models;
 using ERP.API.Models.EmployeeGetResponse;
-using ERP.API.Models.EmployeeContactGetResponse;
-using ERP.API.Models.ClientContactResponse;
-using ERP.API.Models.AssettGetResponse;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -22,11 +17,14 @@ namespace ERP.API.Controllers
     public class EmployeesController : ControllerBase
     {
         private readonly IEmployeeRepository _repository;
-        public EmployeesController(IEmployeeRepository repository)
+        private readonly IContactRepository _contact;
+        public EmployeesController(IEmployeeRepository repository, IContactRepository contact)
         {
             this._repository = repository;
-
+            this._contact = contact;
         }
+
+
         // GET: api/<ValuesController>
         [HttpGet]
         public async Task<IActionResult> Get(string? searchQuery = "", int pageNumber = 1, int pageSize = 10)
@@ -42,13 +40,8 @@ namespace ERP.API.Controllers
                     p.Salary.ToString().Contains(searchQuery) ||
                     p.DOB.ToString().Contains(searchQuery) ||
                     p.CNIC.Contains(searchQuery) ||
-
-                    p.Email.Contains(searchQuery) ||
-                    p.PhoneNumber.ToString().Contains(searchQuery) ||
-                    p.Website.Contains(searchQuery) ||
-                    p.Address.Contains(searchQuery) ||
-
                     p.ContractDate.ToString().Contains(searchQuery)
+
                 );
             }
 
@@ -65,12 +58,11 @@ namespace ERP.API.Controllers
                 Id = p.Id,
                 FirstName = p.FirstName,
                 LastName = p.LastName,
-                Email = p.Email,
-                PhoneNumber = p.PhoneNumber,
-                Website = p.Website,
-                Address = p.Address,
+                DOB = p.DOB,
+                CNIC = p.CNIC,
+                Salary = p.Salary,
+                ContractDate = p.ContractDate,
 
-                //Contacts = p.EmployeeContacts.Select(e => new EmployeeContactGetResponseVM { Id = e.Id, Email = e.Email, PhoneNumber = e.PhoneNumber, Website = e.Website, Address = e.Address, }).ToList()
             }).ToList();
 
 
@@ -103,10 +95,6 @@ namespace ERP.API.Controllers
                         employee.DOB,
                         employee.CNIC,
                         employee.ContractDate,
-                        employee.Email,
-                        employee.PhoneNumber,
-                        employee.Website,
-                        employee.Address,
                         employee.Department,
                         employee.IsActive,
                      }
@@ -117,6 +105,7 @@ namespace ERP.API.Controllers
 
             return NotFound();
         }
+
         // POST api/<ValuesController>
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] EmployeePostVM model)
@@ -134,16 +123,26 @@ namespace ERP.API.Controllers
                 DOB = model.DOB,
                 CNIC = model.CNIC,
                 ContractDate=model.ContractDate,
-                Email = model.Email,
-                PhoneNumber = model.PhoneNumber,
-                Website = model.Website,
-                Address = model.Address,
                 DepartmentId =model.DepartmentId,
-                //EmployeeContacts = model.Contacts.Select(x => new EmployeeContact { Address = x.Address ,Website=x.Website,PhoneNumber=x.PhoneNumber,Email=x.Email}).ToList() // Initialize the EmployeeContacts collection
+                
             };
 
             _repository.Add(employee);
             await _repository.SaveChanges();
+
+            var contacts = new Contact
+                {
+                    Type = "Employee",
+                    Email = model.Contact.Email,
+                    PhoneNumber = model.Contact.PhoneNumber,
+                    Website = model.Contact.Website,
+                    Address = model.Contact.Address,
+                    Country = model.Contact.Country
+                };
+
+            _contact.Add(contacts);
+            await _repository.SaveChanges();
+
 
             return Ok(new APIResponse<Object>
             {
@@ -157,15 +156,13 @@ namespace ERP.API.Controllers
                     employee.Salary,
                     employee.DOB,
                     employee.CNIC,
-                    employee.Email,
-                    employee.PhoneNumber,
-                    employee.Website,
-                    employee.Address,
                     employee.ContractDate,
                     employee.DepartmentId,
+                   
                 }
             });
         }
+
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, [FromBody] EmployeePutVM model)
@@ -184,10 +181,6 @@ namespace ERP.API.Controllers
                 employee.Salary = model.Salary;
                 employee.DOB = model.DOB;
                 employee.CNIC = model.CNIC;
-                employee.Email = model.CNIC;
-                employee.PhoneNumber = model.PhoneNumber;
-                employee.Website = model.Website;
-                employee.Address = model.Website;
                 employee.ContractDate = model.ContractDate;
                 employee.DepartmentId = model.DepartmentId;
 
@@ -218,6 +211,7 @@ namespace ERP.API.Controllers
             return NotFound();
 
         }
+
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)

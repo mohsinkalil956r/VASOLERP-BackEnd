@@ -1,10 +1,8 @@
-﻿using ERP.API.Models.ClientGetResponse;
-
-namespace ERP.API.Models.ClientContactResponse
+﻿namespace ERP.API.Models.Contacts
 {
-    public class ClientContactGetResponseVM
+    public class ContactsPostVM
     {
-        public int Id { get; set; }
+        public string Type { get; set; }
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
         public string Website { get; set; }
