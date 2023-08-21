@@ -11,6 +11,8 @@ using ERP.API.Models.ClientGetResponse;
 using ERP.API.Models.ClientContactResponse;
 using ERP.API.Models.AssettGetResponse;
 using ERP.API.Models.ContactsGetResponseVM;
+using ERP.API.Models.Contacts;
+using ERP.DAL.Migrations;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -76,26 +78,32 @@ namespace ERP.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-            var clients = await this._repository.Get(id).FirstOrDefaultAsync();
-            if (clients != null)
+            var client = await this._repository.Get(id).SingleOrDefaultAsync();
+
+            if (client != null)
             {
+                var contacts = await this._contact.Get().Where(contact => contact.ReferenceId == id && contact.Type == "Client").ToListAsync();
+
+
                 var apiResponse = new APIResponse<Object>
                 {
                     IsError = false,
                     Message = "",
                     data = new
                     {
-                        clients.FirstName,
-                        clients.LastName,
+                        Client = client,
+                        Contacts = contacts,
 
                     }
                 };
+
 
                 return Ok(apiResponse);
             }
 
             return NotFound();
         }
+
 
 
         // POST api/<ValuesController>
@@ -121,11 +129,12 @@ namespace ERP.API.Controllers
             var contacts = new Contact
             {
                 Type = "Client",
+                ReferenceId = clients.Id,
                 Email = model.Contact.Email,
                 PhoneNumber = model.Contact.PhoneNumber,
                 Website = model.Contact.Website,
                 Address = model.Contact.Address,
-                Country = model.Contact.Country
+                Country = model.Contact.Country,
             };
 
             _contact.Add(contacts);
@@ -164,32 +173,38 @@ namespace ERP.API.Controllers
                 client.LastName = model.LastName;
 
 
-                //var contactIds = model.contacts.Select(x => x.Id).ToList();
-
-
-
-                //client.ClientContacts.Where(x => contactIds.Contains(x.Id)).ToList().ForEach(contact =>
-                //{
-                //    var modelContact = model.contacts.Where(x => x.Id == contact.Id).First();
-                //    contact.PhoneNumber = modelContact.PhoneNumber;
-                //    contact.Email = modelContact.Email;
-                //    contact.Address = modelContact.Address;
-                //    contact.Website = modelContact.Website;
-                //});
-
-
                 this._repository.Update(client);
                 await this._repository.SaveChanges();
 
-                return Ok(new APIResponse<Object>
+
+                var contacts = await this._contact.Get().ToListAsync();
+
+                foreach (var contact in contacts)
+                {
+                    if (contact != null && contact.Type == "Client" && contact.ReferenceId == id)
+                    {
+                        contact.Email = model.Contact.Email;
+                        contact.PhoneNumber = model.Contact.PhoneNumber;
+                        contact.Website = model.Contact.Website;
+                        contact.Address = model.Contact.Address;
+                        contact.Country = model.Contact.Country;
+
+                        this._contact.Update(contact);
+                    }
+                }
+
+                await this._contact.SaveChanges();
+
+                return Ok(new APIResponse<object>
                 {
                     IsError = false,
                     Message = "",
                 });
             }
-            return NotFound();
 
+            return NotFound();
         }
+
 
 
         // DELETE api/<ValuesController>/5
@@ -197,10 +212,23 @@ namespace ERP.API.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var clients = await this._repository.Get(id).Include(project => project.Projects).FirstOrDefaultAsync();
+
+            var contacts = await this._contact.Get().Where(contact => contact.ReferenceId == id && contact.Type == "Client").ToListAsync();
+
             if (clients != null)
             {
                 clients.IsActive = false;
+
                 await this._repository.SaveChanges();
+
+
+                foreach (var contact in contacts)
+                {
+                    contact.IsActive = false; // Deactivate associated contacts
+                    await this._contact.SaveChanges();
+
+                }
+
             }
             return Ok(new APIResponse<object>
             {

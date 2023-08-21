@@ -55,8 +55,9 @@ namespace ERP.API.Controllers
 
             var result = contacts.Select(p => new ContactsGetResponseVM
             {
-                Id = p.Id,
+               Id = p.Id,
                Type = p.Type,
+               ReferenceId = p.ReferenceId,
                Email = p.Email,
                PhoneNumber = p.PhoneNumber,
                Website = p.Website,
@@ -128,6 +129,7 @@ namespace ERP.API.Controllers
                 Website = model.Website,
                 Address = model.Address,
                 Country = model.Country,
+                ReferenceId = null,
 
             };
 
@@ -145,7 +147,8 @@ namespace ERP.API.Controllers
                     contacts.PhoneNumber,
                     contacts.Website,
                     contacts.Address,
-                    contacts.Country
+                    contacts.Country,
+                    contacts.ReferenceId,
                 }
             });
 
@@ -191,7 +194,8 @@ namespace ERP.API.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var contacts = await this._repository.Get(id).SingleOrDefaultAsync();
-            if (contacts != null)
+
+            if (contacts != null && contacts.Type != "Client" && contacts.Type != "Employee")
             {
                 contacts.IsActive = false;
                 await this._repository.SaveChanges();

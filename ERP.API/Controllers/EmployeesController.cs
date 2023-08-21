@@ -5,6 +5,7 @@ using ERP.DAL.Repositories.Abstraction;
 using ERP.API.Models.Employees;
 using ERP.API.Models;
 using ERP.API.Models.EmployeeGetResponse;
+using ERP.DAL.Migrations;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -82,21 +83,18 @@ namespace ERP.API.Controllers
             var employee = await this._repository.Get(id).FirstOrDefaultAsync();
             if (employee != null)
             {
+
+                var contacts = await this._contact.Get().Where(contact => contact.ReferenceId == id && contact.Type == "Employee").ToListAsync();
+
                 var apiResponse = new APIResponse<Object>
                 {
                     IsError = false,
                     Message = "",
                     data = new
                     {
-                        employee.Id,
-                        employee.FirstName,
-                        employee.LastName,
-                        employee.Salary,
-                        employee.DOB,
-                        employee.CNIC,
-                        employee.ContractDate,
-                        employee.Department,
-                        employee.IsActive,
+                        Employee = employee,
+                        Contacts = contacts,
+
                      }
                 };
 
@@ -133,6 +131,7 @@ namespace ERP.API.Controllers
             var contacts = new Contact
                 {
                     Type = "Employee",
+                    ReferenceId = employee.Id,
                     Email = model.Contact.Email,
                     PhoneNumber = model.Contact.PhoneNumber,
                     Website = model.Contact.Website,
@@ -184,9 +183,32 @@ namespace ERP.API.Controllers
                 employee.ContractDate = model.ContractDate;
                 employee.DepartmentId = model.DepartmentId;
 
+
+                this._repository.Update(employee);
+                await this._repository.SaveChanges();
+
+
+                var contacts = await this._contact.Get().ToListAsync();
+
+                foreach (var contact in contacts)
+                {
+                    if (contact != null && contact.Type == "Employee" && contact.ReferenceId == id)
+                    {
+                        contact.Email = model.Contact.Email;
+                        contact.PhoneNumber = model.Contact.PhoneNumber;
+                        contact.Website = model.Contact.Website;
+                        contact.Address = model.Contact.Address;
+                        contact.Country = model.Contact.Country;
+
+                        this._contact.Update(contact);
+
+                    }
+                }
+
+                await this._repository.SaveChanges();
+
+
                 //var contactIds = model.Contacts.Select(x => x.Id).ToList();
-
-
 
                 //employee.EmployeeContacts.Where(x => contactIds.Contains(x.Id)).ToList().ForEach(contact =>
                 //{
@@ -196,11 +218,9 @@ namespace ERP.API.Controllers
                 //    contact.Address = modelContact.Address;
                 //    contact.Website = modelContact.Website;
                 //});
-              
-               
 
-                this._repository.Update(employee);
-                await this._repository.SaveChanges();
+
+
 
                 return Ok(new APIResponse<Object>
                 {
@@ -211,16 +231,31 @@ namespace ERP.API.Controllers
             return NotFound();
 
         }
+
 
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             var employee = await this._repository.Get(id).SingleOrDefaultAsync();
+
+            var contacts = await this._contact.Get().Where(contact => contact.ReferenceId == id && contact.Type == "Employee").ToListAsync();
+
+
             if (employee != null)
             {
                 employee.IsActive = false;
                await this. _repository.SaveChanges();
+
+
+                foreach (var contact in contacts)
+                {
+                    contact.IsActive = false; // Deactivate associated contacts
+                    await this._contact.SaveChanges();
+
+                }
+
+
                 return Ok(new APIResponse<Object>
                 {
                     IsError = false,
@@ -229,5 +264,7 @@ namespace ERP.API.Controllers
             }
             return NotFound();
         }
+
+
     }
 }
