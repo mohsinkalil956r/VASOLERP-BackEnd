@@ -12,7 +12,7 @@ namespace ERP.API.Models.AssettGetResponse
         public DateTime PurchaseDate { get; set; }
         public double PurchasePrice { get; set; }
         public AssetTypeGetResponseVM AssetType { get; set; }
-        public EmployeeGetResponseVM Employees { get; set; }
+        public List<EmployeeGetResponseVM> Employees { get; set; }
 
     }
 }
