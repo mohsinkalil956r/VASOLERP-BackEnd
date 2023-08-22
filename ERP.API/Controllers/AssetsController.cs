@@ -120,11 +120,22 @@ namespace ERP.API.Controllers
                 Description = model.Description,
                 PurchaseDate = model.PurchaseDate,
                 PurchasePrice = model.PurchasePrice,
-                AssetTypeId = model.AssetTypeId
+                AssetTypeId = model.AssetTypeId,
+                AssetIssuances= new List<AssetIssuance>
+                {
+                    new AssetIssuance
+                    {
+                        EmployeeId=model.IssuedTo,
+                        IssuanceDate=DateTime.UtcNow,
+                    }
+                }
+              
             };
 
             _repository.Add(asset);
             await _repository.SaveChanges();
+
+            new AssetIssuance { AssetId = asset.Id,EmployeeId=asset.Employees.Select(P=>P.Id).FirstOrDefault() };
             return new APIResponse<object>
             {
                 IsError = true,
