@@ -1,4 +1,5 @@
-﻿using ERP.DAL.Repositories.Abstraction;
+﻿using ERP.API.Models;
+using ERP.DAL.Repositories.Abstraction;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,12 +9,27 @@ namespace ERP.API.Controllers
     [ApiController]
     public class ProductVersionController : ControllerBase
     {
+        private readonly IVersionRepository _versionRepository;
+
+        public ProductVersionController(IVersionRepository versionRepository)
+        {
+            _versionRepository = versionRepository;
+        }
+
         [HttpGet]
         public IActionResult GetVersion()
         {
-            string version = "1.0.0"; // Hardcoded version
+            string version = _versionRepository.GetVersion();
 
-            return Ok(new { Version = version });
+            var response = new ResponseAPIVM<string>
+            {
+                IsError = false,
+                Message = "",
+                data = version,
+
+            };
+
+            return Ok(response);
         }
     }
 }
