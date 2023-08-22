@@ -7,6 +7,7 @@ using ERP.API.Models;
 using ERP.API.Models.AssetTypeGetResponse;
 using ERP.API.Models.AssettGetResponse;
 using ERP.API.Models.EmployeeGetResponse;
+using Microsoft.IdentityModel.Tokens;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -59,9 +60,10 @@ namespace ERP.API.Controllers
                 PurchasePrice = p.PurchasePrice,
                 AssetType = new AssetTypeGetResponseVM { Id = p.AssetTypeId, Name = p.AssetType.Name },
                 Employees = p?.AssetIssuances
-                    ?.Where(issue => issue.Employee.IsActive) // Only include active employees
+                    ?.Where(issue => issue.Employee.IsActive && issue.IsActive==true ) // Only include active employees
                     .Select(issue => new EmployeeGetResponseVM
                     {
+
                         Id = issue.Employee.Id,
                         FirstName = issue.Employee.FirstName,
                     })
@@ -81,7 +83,7 @@ namespace ERP.API.Controllers
         [HttpGet("{id}")]
         public async Task<APIResponse<object>> Get(int id)
         {
-            var asset = await this._repository.Get(id).FirstOrDefaultAsync();
+            var asset = await this._repository.Get(id).Include(p=>p.AssetIssuances).FirstOrDefaultAsync();
             if (asset != null)
             {
                 var result = new AssetGetVM
@@ -92,6 +94,8 @@ namespace ERP.API.Controllers
                     PurchaseDate = asset.PurchaseDate,
                     PurchasePrice = asset.PurchasePrice,
                     AssetTypeId = asset.AssetTypeId,
+                    IssuedTo = asset.AssetIssuances.Select(p => p.EmployeeId).FirstOrDefault(), // Get the employee name
+
 
                 };
                 return new APIResponse<object>
@@ -149,7 +153,8 @@ namespace ERP.API.Controllers
         [HttpPut("{id}")]
         public async Task<APIResponse<object>> Put(int id, [FromBody] AssetPutVM model)
         {
-            var asset = await this._repository.Get(id).FirstOrDefaultAsync();
+            var asset = await this._repository.Get(id)
+                .Include(z=>z.AssetIssuances).FirstOrDefaultAsync();
 
             if (asset != null)
             {
@@ -159,8 +164,25 @@ namespace ERP.API.Controllers
                 asset.PurchasePrice = model.PurchasePrice;
                 asset.PurchaseDate = model.PurchaseDate;
 
+                if (!asset.AssetIssuances.Any(x => x.IsActive && x.EmployeeId == model.IssuedTo))
+                {
+
+                    var assignedPreviously = asset.AssetIssuances.FirstOrDefault(x => x.IsActive);
+                    assignedPreviously.IsActive = false;
+
+                    
+
+                    asset.AssetIssuances.Add(new AssetIssuance
+                    {
+                        EmployeeId = model.IssuedTo,
+                        IssuanceDate = DateTime.UtcNow,
+                    });
+
+                }
+               this._repository.Update(asset);
+
                 await this._repository.SaveChanges();
-                //this._repository.Update(asset);
+                
                 //await this._repository.SaveChanges();
 
                 return new APIResponse<object>
