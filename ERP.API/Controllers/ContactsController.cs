@@ -27,21 +27,21 @@ namespace ERP.API.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> Get(string? searchValue = "", int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> Get(string? searchQuery = "", int pageNumber = 1, int pageSize = 10)
         {
             var query = this._repository.Get()
                 .AsQueryable();
 
             // Apply search filter if searchValue is provided and not null or empty
-            if (!string.IsNullOrEmpty(searchValue))
+            if (!string.IsNullOrEmpty(searchQuery))
             {
                 query = query.Where(p =>
-                    p.Type.Contains(searchValue) ||
-                    p.Email.Contains(searchValue) ||
-                    p.PhoneNumber.Contains(searchValue) ||
-                    p.Website.Contains(searchValue) ||
-                    p.Address.Contains(searchValue) ||
-                    p.Country.Contains(searchValue)
+                    p.Type.Contains(searchQuery) ||
+                    p.Email.Contains(searchQuery) ||
+                    p.PhoneNumber.Contains(searchQuery) ||
+                    p.Website.Contains(searchQuery) ||
+                    p.Address.Contains(searchQuery) ||
+                    p.Country.Contains(searchQuery)
                     );
             }
 
@@ -66,18 +66,14 @@ namespace ERP.API.Controllers
 
             }).ToList();
 
+
+            var paginationResult = new PaginatedResult<ContactsGetResponseVM>(result, totalCount);
+
             return Ok(new APIResponse<object>
             {
                 IsError = false,
                 Message = "",
-                data = new
-                {
-                    TotalCount = totalCount,
-                    PageSize = pageSize,
-                    CurrentPage = pageNumber,
-                    SearchValue = searchValue,
-                    Results = result
-                }
+                data = paginationResult
             });
         }
 
