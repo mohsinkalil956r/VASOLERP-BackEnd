@@ -189,7 +189,6 @@ namespace ERP.API.Controllers
                 {
                     IsError = false,
                     Message = "",
-                    data=asset,
                 };
             }
 
