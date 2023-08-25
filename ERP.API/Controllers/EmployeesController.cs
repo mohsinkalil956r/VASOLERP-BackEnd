@@ -5,16 +5,15 @@ using ERP.DAL.Repositories.Abstraction;
 using ERP.API.Models.Employees;
 using ERP.API.Models;
 using ERP.API.Models.EmployeeGetResponse;
-using ERP.DAL.Migrations;
+using ERP.API.Models.EmployeeContactVM;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace ERP.API.Controllers
 {
+
     [Route("api/[controller]")]
-    [ApiController]
-  
-    
+    [ApiController]  
     public class EmployeesController : ControllerBase
     {
         private readonly IEmployeeRepository _repository;
@@ -30,18 +29,21 @@ namespace ERP.API.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(string? searchQuery = "", int pageNumber = 1, int pageSize = 10)
         {
-            var query = this._repository.Get().AsQueryable();
+            var query = this._repository.GetEmployeeWithContact().Where(x => x.Employee.IsActive);
 
             // Apply search filter if searchQuery is provided and not null or empty
             if (!string.IsNullOrEmpty(searchQuery))
             {
                 query = query.Where(p =>
-                    p.FirstName.Contains(searchQuery) ||
-                    p.LastName.Contains(searchQuery) ||
-                    p.Salary.ToString().Contains(searchQuery) ||
-                    p.DOB.ToString().Contains(searchQuery) ||
-                    p.CNIC.Contains(searchQuery) ||
-                    p.ContractDate.ToString().Contains(searchQuery)
+                    p.Employee.FirstName.Contains(searchQuery) ||
+                    p.Employee.LastName.Contains(searchQuery) ||
+                    p.Employee.Salary.ToString().Contains(searchQuery) ||
+                    p.Employee.DOB.ToString().Contains(searchQuery) ||
+                    p.Employee.CNIC.Contains(searchQuery) ||
+                    p.Employee.ContractDate.ToString().Contains(searchQuery) ||
+                    p.Contact.Email.Contains(searchQuery) ||
+                    p.Contact.PhoneNumber.Contains(searchQuery) ||
+                    p.Contact.Address.Contains(searchQuery)
 
                 );
             }
@@ -56,13 +58,17 @@ namespace ERP.API.Controllers
 
             var result = employees.Select(p => new EmployeeGetResponseVM
             {
-                Id = p.Id,
-                FirstName = p.FirstName,
-                LastName = p.LastName,
-                DOB = p.DOB,
-                CNIC = p.CNIC,
-                Salary = p.Salary,
-                ContractDate = p.ContractDate,
+                Id = p.Employee.Id,
+                FirstName = p.Employee.FirstName,
+                LastName = p.Employee.LastName,
+                DOB = p.Employee.DOB,
+                CNIC = p.Employee.CNIC,
+                Salary = p.Employee.Salary,
+                ContractDate = p.Employee.ContractDate,
+                Email = p.Contact.Email,
+                PhoneNumber = p.Contact.PhoneNumber,
+                Address = p.Contact.Address,
+
 
             }).ToList();
 
@@ -80,22 +86,35 @@ namespace ERP.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-            var employee = await this._repository.Get(id).FirstOrDefaultAsync();
+            var query =  this._repository.GetEmployeeWithContact().Where(contact => contact.Contact.ReferenceId == id && contact.Contact.Type == "Employee").AsQueryable();
+           
+            var employee = await query.FirstOrDefaultAsync();
+
             if (employee != null)
             {
 
-                var contacts = await this._contact.Get().Where(contact => contact.ReferenceId == id && contact.Type == "Employee").ToListAsync();
+                var employeeData = new EmployeeContactVM
+                {
+                    FirstName = employee.Employee.FirstName,
+                    LastName = employee.Employee.LastName,
+                    DOB= employee.Employee.DOB,
+                    CNIC = employee.Employee.CNIC,
+                    Salary = employee.Employee.Salary,
+                    ContractDate= employee.Employee.ContractDate,
+                    Email = employee.Contact.Email,
+                    PhoneNumber = employee.Contact.PhoneNumber,
+                    Address = employee.Contact.Address,
+                    
+                };
 
                 var apiResponse = new APIResponse<Object>
                 {
                     IsError = false,
                     Message = "",
-                    data = new
+                    data = new 
                     {
-                        Employee = employee,
-                        Contacts = contacts,
-
-                     }
+                        employeeData 
+                    }
                 };
 
                 return Ok(apiResponse);
@@ -132,11 +151,11 @@ namespace ERP.API.Controllers
                 {
                     Type = "Employee",
                     ReferenceId = employee.Id,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
                     Email = model.Contact.Email,
                     PhoneNumber = model.Contact.PhoneNumber,
-                    Website = model.Contact.Website,
-                    Address = model.Contact.Address,
-                    Country = model.Contact.Country
+                    Address = model.Contact.Address
                 };
 
             _contact.Add(contacts);
@@ -194,11 +213,11 @@ namespace ERP.API.Controllers
                 {
                     if (contact != null && contact.Type == "Employee" && contact.ReferenceId == id)
                     {
+                        contact.FirstName = model.Contact.FirstName;
+                        contact.LastName = model.Contact.LastName;
                         contact.Email = model.Contact.Email;
                         contact.PhoneNumber = model.Contact.PhoneNumber;
-                        contact.Website = model.Contact.Website;
                         contact.Address = model.Contact.Address;
-                        contact.Country = model.Contact.Country;
 
                         this._contact.Update(contact);
 
@@ -206,7 +225,6 @@ namespace ERP.API.Controllers
                 }
 
                 await this._repository.SaveChanges();
-
 
                 //var contactIds = model.Contacts.Select(x => x.Id).ToList();
 
@@ -219,9 +237,6 @@ namespace ERP.API.Controllers
                 //    contact.Website = modelContact.Website;
                 //});
 
-
-
-
                 return Ok(new APIResponse<Object>
                 {
                     IsError = false,
@@ -232,7 +247,6 @@ namespace ERP.API.Controllers
 
         }
 
-
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
@@ -241,20 +255,17 @@ namespace ERP.API.Controllers
 
             var contacts = await this._contact.Get().Where(contact => contact.ReferenceId == id && contact.Type == "Employee").ToListAsync();
 
-
             if (employee != null)
             {
                 employee.IsActive = false;
-               await this. _repository.SaveChanges();
+                await this. _repository.SaveChanges();
 
 
                 foreach (var contact in contacts)
                 {
-                    contact.IsActive = false; // Deactivate associated contacts
+                    contact.IsActive = false;
                     await this._contact.SaveChanges();
-
                 }
-
 
                 return Ok(new APIResponse<Object>
                 {

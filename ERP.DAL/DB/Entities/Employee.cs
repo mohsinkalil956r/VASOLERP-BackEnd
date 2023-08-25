@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,6 +24,9 @@ namespace ERP.DAL.DB.Entities
         public List<ProjectEmployee> ProjectEmployees { get; set; } = new();
         public List<AssetIssuance> AssetIssuances { get; set; } = new();
         public List<Asset> Assets { get; set; } = new();
+
+        [NotMapped]
+        public Contact Contact { get; set; }    
 
     }
 }
