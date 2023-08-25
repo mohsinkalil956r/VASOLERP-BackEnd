@@ -9,6 +9,8 @@ namespace ERP.API.Models.Assets
         public DateTime PurchaseDate { get; set; }
         public double PurchasePrice { get; set; }
         public int AssetTypeId { get; set; }
+
+        public int IssuedTo { get; set; }
       
     }
 }
