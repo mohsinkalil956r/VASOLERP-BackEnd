@@ -1,4 +1,5 @@
-﻿using ERP.DAL.DB.Entities;
+﻿using ERP.DAL.DB.EmployeeContactDTO;
+using ERP.DAL.DB.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,5 +10,6 @@ namespace ERP.DAL.Repositories.Abstraction
 {
     public interface IEmployeeRepository : IRepository<Employee>
     {
+        IQueryable<EmployeeContactDTO> GetEmployeeWithContact();
     }
 }

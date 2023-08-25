@@ -72,11 +72,10 @@ namespace ERP.DAL.DB
         public DbSet<Asset> Assets { get; set; }
         public DbSet<AssetType> AssetType { get; set; }
         public DbSet<AssetIssuance> AssetIssuances { get; set; }
-        public DbSet<ClientContact> ClientContacts { get; set; }
         public DbSet<Department> Departments { get; set; }
-        public DbSet<EmployeeContact> EmployeeContacts { get; set; }
         public DbSet<Expense> Expenses { get; set; }
         public DbSet<ExpenseType> ExpenseTypes { get; set; }
         public DbSet<PaymentMode> PaymentModes { get; set; }
+        public DbSet<Contact> Contacts { get; set; }
     }
 }

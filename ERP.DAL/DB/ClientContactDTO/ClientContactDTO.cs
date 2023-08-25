@@ -5,9 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ERP.DAL.Repositories.Abstraction
+namespace ERP.DAL.DB.ClientContactDTO
 {
-    public interface IClientContactRepository: IRepository<ClientContact>
+    public class ClientContactDTO
     {
+        public Client Client { get; set; }
+        public Contact Contact { get; set; }
     }
 }

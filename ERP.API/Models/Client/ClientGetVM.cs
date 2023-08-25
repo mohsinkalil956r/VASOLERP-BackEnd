@@ -2,11 +2,8 @@
 
 namespace ERP.API.Models.Client
 {
-    public class ClientGetVM
+    public class ClientGetVM : ClientPostVM
     {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-
 
     }
 }

@@ -5,38 +5,48 @@ using ERP.DAL.DB.Entities;
 using ERP.DAL.Repositories.Abstraction;
 using ERP.API.Models.Client;
 using ERP.API.Models;
-using ERP.API.Models.Employees;
 using System.Linq;
 using ERP.API.Models.ClientGetResponse;
-using ERP.API.Models.ClientContactResponse;
 using ERP.API.Models.AssettGetResponse;
+using ERP.API.Models.ContactsGetResponseVM;
+using ERP.API.Models.Contacts;
+using ERP.API.Models.ClientContactVM;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace ERP.API.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
     public class ClientsController : ControllerBase
     {
         private readonly IClientsRepository _repository;
-        public ClientsController(IClientsRepository repository)
+        private readonly IContactRepository _contact;
+
+        public ClientsController(IClientsRepository repository, IContactRepository contact)
         {
             this._repository = repository;
+            this._contact = contact;
         }
+
 
         // GET: api/<ValuesController>
         [HttpGet]
         public async Task<IActionResult> Get(string? searchQuery = "", int pageNumber = 1, int pageSize = 10)
         {
-            var query =   this._repository.Get().Include(p => p.ClientContacts).AsQueryable();
+            var query = this._repository.GetClientWithContact().Where(y => y.Client.IsActive);
 
             // Apply search filter if searchQuery is provided and not null or empty
             if (!string.IsNullOrEmpty(searchQuery))
             {
                 query = query.Where(p =>
-                    p.FirstName.Contains(searchQuery) ||
-                    p.LastName.Contains(searchQuery) 
+                    p.Client.FirstName.Contains(searchQuery) ||
+                    p.Client.LastName.Contains(searchQuery) ||
+                    p.Contact.Email.Contains(searchQuery) ||
+                    p.Contact.PhoneNumber.Contains(searchQuery) ||
+                    p.Contact.Address.Contains(searchQuery)
+
                     );
             }
 
@@ -50,10 +60,13 @@ namespace ERP.API.Controllers
 
             var result = clients.Select(p => new ClientGetResponseVM
             {
-                Id = p.Id,
-                FirstName = p.FirstName,
-                LastName = p.LastName,
-                contacts = p.ClientContacts.Select(e => new ClientContactGetResponseVM { Id = e.Id, Email = e.Email, PhoneNumber = e.PhoneNumber, Website = e.Website, Address = e.Address, Country = e.Country }).ToList()
+                Id = p.Client.Id,
+                FirstName = p.Client.FirstName,
+                LastName = p.Client.LastName,
+                Email = p.Contact.Email,
+                PhoneNumber = p.Contact.PhoneNumber,
+                Address = p.Contact.Address,
+
             }).ToList();
 
             var paginationResult = new PaginatedResult<ClientGetResponseVM>(result, totalCount);
@@ -65,26 +78,36 @@ namespace ERP.API.Controllers
             });
         }
 
-
-        // GET a    pi/<ValuesController>/5
+        // GET api/<ValuesController>/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-            var clients = await this._repository.Get(id).Include(p => p.ClientContacts).FirstOrDefaultAsync();
-            if (clients != null)
+            var query = this._repository.GetClientWithContact().Where(contact => contact.Contact.ReferenceId == id && contact.Contact.Type == "Client").AsQueryable();
+
+            var client = await query.FirstOrDefaultAsync();
+
+            if (client != null)
             {
+
+                var clientData = new ClientContactVM
+                {
+                    FirstName = client.Client.FirstName,
+                    LastName = client.Client.LastName,
+                    Email = client.Contact.Email,
+                    PhoneNumber = client.Contact.PhoneNumber,
+                    Address = client.Contact.Address,
+                };
+
                 var apiResponse = new APIResponse<Object>
                 {
                     IsError = false,
                     Message = "",
                     data = new
                     {
-                        clients.FirstName,
-                        clients.LastName,
-
-
+                        clientData
                     }
                 };
+
 
                 return Ok(apiResponse);
             }
@@ -96,22 +119,36 @@ namespace ERP.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] ClientPostVM model)
         {
+
             if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(ModelState);
             }
 
-
-            var clients = new Client
+            var client = new Client
             {
                FirstName = model.FirstName,
                LastName = model.LastName,
 
-                ClientContacts = model.contacts.Select(x => new ClientContact { Email = x.Email, PhoneNumber = x.PhoneNumber, Website = x.Website, Address = x.Address, Country = x.Country }).ToList()
             };
 
-            _repository.Add(clients);
+            _repository.Add(client);
             await _repository.SaveChanges();
+
+            var contacts = new Contact
+            {
+                Type = "Client",
+                ReferenceId = client.Id,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Email = model.Contact.Email,
+                PhoneNumber = model.Contact.PhoneNumber,
+                Address = model.Contact.Address,
+            };
+
+            _contact.Add(contacts);
+            await _repository.SaveChanges();
+
 
             return Ok(new APIResponse<Object>
             {
@@ -119,15 +156,12 @@ namespace ERP.API.Controllers
                 Message = "",
                 data = new
                 {
-                    clients.Id,
-                    clients.FirstName,
-                    clients.LastName,
-
+                    client.Id,
+                    client.FirstName,
+                    client.LastName,
 
                 }
             });
-
-
 
         }
 
@@ -140,56 +174,75 @@ namespace ERP.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var client = await this._repository.Get(id).Include(e => e.ClientContacts).SingleOrDefaultAsync();
+            var client = await this._repository.Get(id).SingleOrDefaultAsync();
 
             if (client != null)
             {
                 client.FirstName = model.FirstName;
-                client.LastName = model.LastName;   
+                client.LastName = model.LastName;
 
 
-                var contactIds = model.contacts.Select(x => x.Id).ToList();
-
-
-
-                client.ClientContacts.Where(x => contactIds.Contains(x.Id)).ToList().ForEach(contact =>
-                {
-                    var modelContact = model.contacts.Where(x => x.Id == contact.Id).First();
-                    contact.PhoneNumber = modelContact.PhoneNumber;
-                    contact.Email = modelContact.Email;
-                    contact.Address = modelContact.Address;
-                    contact.Website = modelContact.Website;
-                });
                 this._repository.Update(client);
                 await this._repository.SaveChanges();
 
-                return Ok(new APIResponse<Object>
+
+                var contacts = await this._contact.Get().ToListAsync();
+
+                foreach (var contact in contacts)
+                {
+                    if (contact != null && contact.Type == "Client" && contact.ReferenceId == id)
+                    {
+                        contact.FirstName = model.Contact.FirstName;
+                        contact.LastName = model.Contact.LastName;
+                        contact.Email = model.Contact.Email;
+                        contact.PhoneNumber = model.Contact.PhoneNumber;
+                        contact.Address = model.Contact.Address;
+
+                        this._contact.Update(contact);
+                    }
+                }
+
+                await this._contact.SaveChanges();
+
+                return Ok(new APIResponse<object>
+                {
+                    IsError = false,
+                    Message = "",
+                });
+            }
+
+            return NotFound();
+        }
+
+        // DELETE api/<ValuesController>/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var clients = await this._repository.Get(id).Include(project => project.Projects).FirstOrDefaultAsync();
+
+            var contacts = await this._contact.Get().Where(contact => contact.ReferenceId == id && contact.Type == "Client").ToListAsync();
+
+            if (clients != null)
+            {
+                clients.IsActive = false;
+                await this._repository.SaveChanges();
+
+
+                foreach (var contact in contacts)
+                {
+                    contact.IsActive = false;
+                    await this._contact.SaveChanges();
+
+                }
+                return Ok(new APIResponse<object>
                 {
                     IsError = false,
                     Message = "",
                 });
             }
             return NotFound();
-
         }
 
 
-        // DELETE api/<ValuesController>/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var clients = await this._repository.Get(id).Include(project => project.Projects).Include(clientContact => clientContact.ClientContacts).FirstOrDefaultAsync();
-            if (clients != null)
-            {
-                clients.IsActive = false;
-                await this._repository.SaveChanges();
-            }
-            return Ok(new APIResponse<object>
-            {
-                IsError = false,
-                Message = "",
-
-            });
-        }
     }
 }

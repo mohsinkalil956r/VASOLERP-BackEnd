@@ -1,17 +1,13 @@
-﻿using ERP.API.Models.Projects;
-
-namespace ERP.API.Models.ClientGetResponse
+﻿namespace ERP.API.Models.ClientContactVM
 {
-    public class ClientGetResponseVM
+    public class ClientContactVM
     {
         public int Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
 
-        public ProjectGetVM Project { get; set; }
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
-
     }
 }
