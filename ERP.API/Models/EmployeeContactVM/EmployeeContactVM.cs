@@ -1,4 +1,7 @@
-﻿namespace ERP.API.Models.EmployeeContactVM
+﻿using ERP.API.Models.DepartmentController;
+using ERP.DAL.DB.Entities;
+
+namespace ERP.API.Models.EmployeeContactVM
 {
     public class EmployeeContactVM
     {
@@ -10,6 +13,8 @@
         public string CNIC { get; set; }
         public double Salary { get; set; }
         public DateTime ContractDate { get; set; }
+
+        public DepartmentGetVM Department { get; set; }
 
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
