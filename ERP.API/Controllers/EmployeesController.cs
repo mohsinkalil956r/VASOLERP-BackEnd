@@ -157,7 +157,6 @@ namespace ERP.API.Controllers
                     Email = model.Contact.Email,
                     PhoneNumber = model.Contact.PhoneNumber,
                     Address = model.Contact.Address,
-                    Website="",
                 };
 
             _contact.Add(contacts);

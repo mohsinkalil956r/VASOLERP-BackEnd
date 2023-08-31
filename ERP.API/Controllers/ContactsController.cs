@@ -121,7 +121,7 @@ namespace ERP.API.Controllers
 
             var contacts = new Contact
             {
-                Type = model.Type,
+                Type = "Custom",
                 ReferenceId = null,
                 FirstName = model.FirstName,
                 LastName = model.LastName,
