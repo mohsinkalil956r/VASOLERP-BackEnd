@@ -6,6 +6,7 @@ using ERP.API.Models.Employees;
 using ERP.API.Models;
 using ERP.API.Models.EmployeeGetResponse;
 using ERP.API.Models.EmployeeContactVM;
+using ERP.API.Models.EmployeeContactGetId;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -101,9 +102,11 @@ namespace ERP.API.Controllers
                     CNIC = employee.Employee.CNIC,
                     Salary = employee.Employee.Salary,
                     ContractDate= employee.Employee.ContractDate,
-                    Email = employee.Contact.Email,
-                    PhoneNumber = employee.Contact.PhoneNumber,
-                    Address = employee.Contact.Address,
+
+                    Contacts = new EmployeeContactGetIdVM { Email = employee.Contact.Email, PhoneNumber = employee.Contact.PhoneNumber,
+                        Address = employee.Contact.Address,
+                    },
+                    
                     
                 };
 

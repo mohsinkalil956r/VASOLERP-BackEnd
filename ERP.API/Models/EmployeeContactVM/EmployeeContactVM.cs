@@ -1,4 +1,6 @@
-﻿namespace ERP.API.Models.EmployeeContactVM
+﻿using ERP.API.Models.EmployeeContactGetId;
+
+namespace ERP.API.Models.EmployeeContactVM
 {
     public class EmployeeContactVM
     {
@@ -11,8 +13,6 @@
         public double Salary { get; set; }
         public DateTime ContractDate { get; set; }
 
-        public string Email { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Address { get; set; }
+        public EmployeeContactGetIdVM Contacts { get; set; }
     }
 }
