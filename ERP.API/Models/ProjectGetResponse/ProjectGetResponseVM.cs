@@ -7,13 +7,16 @@ namespace ERP.API.Models.ProjectGetResponse
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public DateTime PlannedCompletedAt { get; set; }
         public string Description { get; set; }
         public DateTime StartDate { get; set; }
-        public DateTime DeadLine { get; set; }
+        public DateTime CompletionDate { get; set; }
         public double Budget { get; set; }
-        public ClientGetResponseVM Client { get; set; }
+        public string Location { get; set; }
+        
+        public ProjectClientVM Client { get; set; }
 
-        public StatusGetResponseVM Status { get; set; }
+        public ProjectStatusVM Status { get; set; }
         public List<int> EmployeeIds { get; set; } = new();
 
     }

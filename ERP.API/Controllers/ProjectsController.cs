@@ -7,6 +7,8 @@ using ERP.API.Models;
 using ERP.API.Models.ProjectGetResponse;
 using ERP.API.Models.ClientGetResponse;
 using ERP.API.Models.ExpenseGetReponse;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -25,7 +27,7 @@ namespace ERP.API.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(string? searchQuery = "", int pageNumber = 1, int pageSize = 10)
         {
-            var query =  this._repository.Get().Include(c => c.Client).Include(c => c.Status).AsQueryable();
+            var query =  this._repository.Get().Include(c => c.Client).Include(c => c.Status).Include(e=>e.Employees).AsQueryable();
 
             // Apply search filter if searchQuery is provided and not null or empty
             if (!string.IsNullOrEmpty(searchQuery))
@@ -33,8 +35,11 @@ namespace ERP.API.Controllers
                 query = query.Where(p =>
                     p.Name.Contains(searchQuery) ||
                     p.Description.Contains(searchQuery)||
+                      p.PlannedCompletedAt.ToString().Contains(searchQuery) ||
                     p.StartDate.ToString().Contains(searchQuery) ||
-                    p.DeadLine.ToString().Contains(searchQuery)||
+                    p.CompletionDate.ToString().Contains(searchQuery)||
+                     p.Location.Contains(searchQuery) ||
+                     
                     p.Budget.ToString().Contains(searchQuery)
                     );
             }
@@ -49,17 +54,26 @@ namespace ERP.API.Controllers
 
             var result = clients.Select(p => new ProjectGetResponseVM
             {
-                Id=p.Id,
-             Name=   p.Name,
-              Description=  p.Description,
-              StartDate=  p.StartDate,
-              DeadLine=  p.DeadLine,
-             Budget=   p.Budget,
-               Client = new ClientGetResponseVM
-               {
-                FirstName=   p.Client.FirstName,
-                   },
-               }).ToList();
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                StartDate = p.StartDate,
+                CompletionDate = p.CompletionDate,
+                PlannedCompletedAt = p.PlannedCompletedAt,
+                Location = p.Location,
+                Budget = p.Budget,
+                
+                Client = new ProjectClientVM
+                {
+                    FirstName = p.Client.FirstName,
+                },
+                Status = new ProjectStatusVM
+                {
+                    Name = p.Status.Name,
+                },
+                EmployeeIds = p.ProjectEmployees.Select(p => p.EmployeeId).ToList(),
+
+            }).ToList();
 
             var paginationResult = new PaginatedResult<ProjectGetResponseVM>(result, totalCount);
             return Ok(new APIResponse<object>
@@ -73,14 +87,28 @@ namespace ERP.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-            var project = await this._repository.Get(id).FirstOrDefaultAsync();
+            var project = await this._repository.Get(id).Include(p=>p.ProjectEmployees).FirstOrDefaultAsync();
             if (project != null)
             {
+
                 return Ok(new APIResponse<Object>
                 {
                     IsError = false,
                     Message = "",
-                    data = project,
+                    data = new 
+                    {
+                        Name= project.Name,
+                        Description= project.Description,
+                        StartDate= project.StartDate,
+                                   project.CompletionDate,
+                                   project.PlannedCompletedAt,
+                        Budget = project.Budget,
+                        Location= project.Location, 
+                                  project.ClientId,
+                                  project.StatusId,
+                              employeeids=    project.ProjectEmployees.Select(p => p.EmployeeId).ToList(),
+
+                    },
                 });
             }
             return NotFound();
@@ -95,7 +123,8 @@ namespace ERP.API.Controllers
                 {
                     Budget = model.Budget,
                     ClientId = model.ClientId,
-                    DeadLine = model.DeadLine,
+                    PlannedCompletedAt = model.PlannedCompletedAt,
+                    CompletionDate = model.CompletionDate,
                     Description = model.Description,
                     Name = model.Name,
                     Location= model.Location,
@@ -103,8 +132,18 @@ namespace ERP.API.Controllers
                     StatusId=model.StatusId,
                     ProjectEmployees = model.EmployeeIds.Select(x => new ProjectEmployee { EmployeeId = x }).ToList()
             };
+                // Configure JsonSerializerOptions with ReferenceHandler.Preserve
+                var jsonOptions = new JsonSerializerOptions
+                {
+                    ReferenceHandler = ReferenceHandler.Preserve
+                };
 
-            _repository.Add(project);
+                // Serialize the object to JSON using the configured options
+                var jsonString = JsonSerializer.Serialize(project, jsonOptions);
+
+                // Now you can use the jsonString as needed
+
+                _repository.Add(project);
             await _repository.SaveChanges();
                 return Ok(new APIResponse<Object>
                 {
@@ -130,7 +169,8 @@ namespace ERP.API.Controllers
                 project.ProjectEmployees = model.EmployeeIds.Select(e => new ProjectEmployee { ProjectId = id, EmployeeId = e }).ToList();
                 project.StartDate = model.StartDate;
                 project.StatusId = model.StatusId;
-                project.DeadLine = model.DeadLine;
+                project.CompletionDate = model.CompletionDate;
+                project.PlannedCompletedAt = model.PlannedCompletedAt;
                 project.Description = model.Description; 
                 project.Name = model.Name;
                 project.Budget = model.Budget;
@@ -139,6 +179,15 @@ namespace ERP.API.Controllers
                 project.StatusId = model.StatusId;
                 this._repository.Update(project);
                 await this._repository.SaveChanges();
+                var jsonOptions = new JsonSerializerOptions
+                {
+                    ReferenceHandler = ReferenceHandler.Preserve
+                };
+
+                // Serialize the object to JSON using the configured options
+                var jsonString = JsonSerializer.Serialize(project, jsonOptions);
+
+                // Now you can use the jsonString as needed
                 return Ok(new APIResponse<Object>
                 {
                     IsError = false,

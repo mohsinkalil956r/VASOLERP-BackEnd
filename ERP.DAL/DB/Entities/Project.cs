@@ -12,8 +12,9 @@ namespace ERP.DAL.DB.Entities
         public bool IsActive { get; set; } = true;
         public string Name { get; set; }
         public string Description { get; set; }
+        public DateTime PlannedCompletedAt { get; set; }
         public DateTime StartDate { get; set; }
-        public DateTime DeadLine { get; set; }
+        public DateTime CompletionDate { get; set; }
         public double Budget { get; set; }
 
         public string Location { get; set; }
