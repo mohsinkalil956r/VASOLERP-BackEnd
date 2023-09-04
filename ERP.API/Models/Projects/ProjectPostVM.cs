@@ -14,7 +14,7 @@ namespace ERP.API.Models.Projects
         public string Location { get; set; }
 
         public int StatusId { get; set; }
-        public List<int> EmployeeIds { get; set; } = new();
+  //      public List<int> EmployeeIds { get; set; } = new();
 
     }
 }

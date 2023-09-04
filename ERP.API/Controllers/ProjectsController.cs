@@ -27,7 +27,7 @@ namespace ERP.API.Controllers
         [HttpGet]
         public async Task<IActionResult> Get(string? searchQuery = "", int pageNumber = 1, int pageSize = 10)
         {
-            var query =  this._repository.Get().Include(c => c.Client).Include(c => c.Status).Include(e=>e.Employees).AsQueryable();
+            var query =  this._repository.Get().Include(c => c.Client).Include(c => c.Status).AsQueryable();
 
             // Apply search filter if searchQuery is provided and not null or empty
             if (!string.IsNullOrEmpty(searchQuery))
@@ -71,7 +71,7 @@ namespace ERP.API.Controllers
                 {
                     Name = p.Status.Name,
                 },
-                EmployeeIds = p.ProjectEmployees.Select(p => p.EmployeeId).ToList(),
+     //           EmployeeIds = p.ProjectEmployees.Select(p => p.EmployeeId).ToList(),
 
             }).ToList();
 
@@ -87,7 +87,7 @@ namespace ERP.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id)
         {
-            var project = await this._repository.Get(id).Include(p=>p.ProjectEmployees).FirstOrDefaultAsync();
+            var project = await this._repository.Get(id).FirstOrDefaultAsync();
             if (project != null)
             {
 
@@ -106,7 +106,7 @@ namespace ERP.API.Controllers
                         Location= project.Location, 
                                   project.ClientId,
                                   project.StatusId,
-                              employeeids=    project.ProjectEmployees.Select(p => p.EmployeeId).ToList(),
+                      //        employeeids=    project.ProjectEmployees.Select(p => p.EmployeeId).ToList(),
 
                     },
                 });
@@ -130,26 +130,14 @@ namespace ERP.API.Controllers
                     Location= model.Location,
                     StartDate = model.StartDate,
                     StatusId=model.StatusId,
-                    ProjectEmployees = model.EmployeeIds.Select(x => new ProjectEmployee { EmployeeId = x }).ToList()
+             //       ProjectEmployees = model.EmployeeIds.Select(x => new ProjectEmployee { EmployeeId = x }).ToList()
             };
-                // Configure JsonSerializerOptions with ReferenceHandler.Preserve
-                var jsonOptions = new JsonSerializerOptions
-                {
-                    ReferenceHandler = ReferenceHandler.Preserve
-                };
-
-                // Serialize the object to JSON using the configured options
-                var jsonString = JsonSerializer.Serialize(project, jsonOptions);
-
-                // Now you can use the jsonString as needed
-
                 _repository.Add(project);
             await _repository.SaveChanges();
                 return Ok(new APIResponse<Object>
                 {
                     IsError = false,
                     Message = "",
-                    data = project,
                 });
             }
             else
@@ -166,7 +154,7 @@ namespace ERP.API.Controllers
 
             if (project != null)
             {
-                project.ProjectEmployees = model.EmployeeIds.Select(e => new ProjectEmployee { ProjectId = id, EmployeeId = e }).ToList();
+             //   project.ProjectEmployees = model.EmployeeIds.Select(e => new ProjectEmployee { ProjectId = id, EmployeeId = e }).ToList();
                 project.StartDate = model.StartDate;
                 project.StatusId = model.StatusId;
                 project.CompletionDate = model.CompletionDate;
@@ -179,20 +167,12 @@ namespace ERP.API.Controllers
                 project.StatusId = model.StatusId;
                 this._repository.Update(project);
                 await this._repository.SaveChanges();
-                var jsonOptions = new JsonSerializerOptions
-                {
-                    ReferenceHandler = ReferenceHandler.Preserve
-                };
-
-                // Serialize the object to JSON using the configured options
-                var jsonString = JsonSerializer.Serialize(project, jsonOptions);
 
                 // Now you can use the jsonString as needed
                 return Ok(new APIResponse<Object>
                 {
                     IsError = false,
                     Message = "",
-                    data = project,
                 });
             }
 
@@ -204,7 +184,7 @@ namespace ERP.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var project = await this._repository.Get(id).Include(p => p.ProjectEmployees).FirstOrDefaultAsync();
+            var project = await this._repository.Get(id).FirstOrDefaultAsync();
             if (project != null)
             {
                 project.IsActive = false;

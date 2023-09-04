@@ -17,7 +17,7 @@ namespace ERP.API.Models.ProjectGetResponse
         public ProjectClientVM Client { get; set; }
 
         public ProjectStatusVM Status { get; set; }
-        public List<int> EmployeeIds { get; set; } = new();
+    //    public List<int> EmployeeIds { get; set; } = new();
 
     }
 }
