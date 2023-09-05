@@ -7,6 +7,7 @@ using ERP.API.Models;
 using ERP.API.Models.EmployeeGetResponse;
 using ERP.API.Models.EmployeeContactVM;
 using ERP.API.Models.DepartmentController;
+using ERP.API.Models.EmployeeContactGetId;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -65,7 +66,7 @@ namespace ERP.API.Controllers
                 CNIC = p.Employee.CNIC,
                 Salary = p.Employee.Salary,
                 ContractDate = p.Employee.ContractDate,
-                Department = new DepartmentGetVM{ Id = p.Employee.Department.Id, Name = p.Employee.Department.Name },
+                Department = new DepartmentGetVM { Id = p.Employee.Department.Id, Name = p.Employee.Department.Name, HOD = p.Employee.Department.HOD },
 
                 Email = p.Contact.Email,
                 PhoneNumber = p.Contact.PhoneNumber,
@@ -88,34 +89,37 @@ namespace ERP.API.Controllers
         {
             var query =  this._repository.GetEmployeeWithContact().Where(contact => contact.Contact.ReferenceId == id && contact.Contact.Type == "Employee").AsQueryable();
            
-            var employee = await query.FirstOrDefaultAsync();
-
-            if (employee != null)
+            var employee = await query.Select(employee => new EmployeeContactVM
             {
-
-                var employeeData = new EmployeeContactVM
+                Id = employee.Employee.Id,
+                FirstName = employee.Employee.FirstName,
+                LastName = employee.Employee.LastName,
+                DOB = employee.Employee.DOB,
+                CNIC = employee.Employee.CNIC,
+                Salary = employee.Employee.Salary,
+                ContractDate = employee.Employee.ContractDate,
+                Department = new DepartmentGetByIdVM
                 {
-                    Id = employee.Employee.Id,
-                    FirstName = employee.Employee.FirstName,
-                    LastName = employee.Employee.LastName,
-                    DOB= employee.Employee.DOB,
-                    CNIC = employee.Employee.CNIC,
-                    Salary = employee.Employee.Salary,
-                    ContractDate= employee.Employee.ContractDate,
+                    Id = employee.Employee.Department.Id,
+                    Name = employee.Employee.Department.Name,
+                    Hod = employee.Employee.Department.HOD
+                },
+                Contacts = new EmployeeContactGetIdVM
+                {
                     Email = employee.Contact.Email,
                     PhoneNumber = employee.Contact.PhoneNumber,
                     Address = employee.Contact.Address,
-                    
-                };
+                },
+            }).FirstOrDefaultAsync();
+
+            if (employee != null)
+            {
 
                 var apiResponse = new APIResponse<Object>
                 {
                     IsError = false,
                     Message = "",
-                    data = new 
-                    {
-                        employeeData 
-                    }
+                    data = employee
                 };
 
                 return Ok(apiResponse);
@@ -157,6 +161,7 @@ namespace ERP.API.Controllers
                     Email = model.Contact.Email,
                     PhoneNumber = model.Contact.PhoneNumber,
                     Address = model.Contact.Address,
+                    Website = ""
                 };
 
             _contact.Add(contacts);
@@ -227,17 +232,6 @@ namespace ERP.API.Controllers
 
                 await this._repository.SaveChanges();
 
-                //var contactIds = model.Contacts.Select(x => x.Id).ToList();
-
-                //employee.EmployeeContacts.Where(x => contactIds.Contains(x.Id)).ToList().ForEach(contact =>
-                //{
-                //    var modelContact = model.Contacts.Where(x => x.Id == contact.Id).First();
-                //    contact.PhoneNumber = modelContact.PhoneNumber;
-                //    contact.Email = modelContact.Email;
-                //    contact.Address = modelContact.Address;
-                //    contact.Website = modelContact.Website;
-                //});
-
                 return Ok(new APIResponse<Object>
                 {
                     IsError = false,
@@ -276,7 +270,6 @@ namespace ERP.API.Controllers
             }
             return NotFound();
         }
-
 
     }
 }
