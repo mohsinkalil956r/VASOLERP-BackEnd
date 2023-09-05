@@ -41,6 +41,7 @@ namespace ERP.API.Controllers
                     p.LastName.Contains(searchQuery) ||
                     p.Email.Contains(searchQuery) ||
                     p.PhoneNumber.Contains(searchQuery) ||
+                    p.Website.Contains(searchQuery) ||
                     p.Address.Contains(searchQuery)
                     );
             }
@@ -62,6 +63,7 @@ namespace ERP.API.Controllers
                 LastName = p.LastName,
                 Email = p.Email,
                 PhoneNumber = p.PhoneNumber,
+                Website = p.Website,
                 Address = p.Address,
 
             }).ToList();
@@ -95,6 +97,7 @@ namespace ERP.API.Controllers
                         contacts.LastName,
                         contacts.Email,
                         contacts.PhoneNumber,
+                        contacts.Website,
                         contacts.Address,
 
                     }
@@ -118,12 +121,13 @@ namespace ERP.API.Controllers
 
             var contacts = new Contact
             {
-                Type = model.Type,
+                Type = "Custom",
                 ReferenceId = null,
                 FirstName = model.FirstName,
                 LastName = model.LastName,
                 Email = model.Email,
                 PhoneNumber = model.PhoneNumber,
+                Website = model.Website,
                 Address = model.Address,
 
             };
@@ -143,6 +147,7 @@ namespace ERP.API.Controllers
                     contacts.LastName,
                     contacts.Email,
                     contacts.PhoneNumber,
+                    contacts.Website,
                     contacts.Address,
                 }
             });
@@ -167,6 +172,7 @@ namespace ERP.API.Controllers
                 contacts.LastName = model.LastName;
                 contacts.Email = model.Email;
                 contacts.PhoneNumber = model.PhoneNumber;
+                contacts.Website = model.Website;
                 contacts.Address = model.Address;
 
 

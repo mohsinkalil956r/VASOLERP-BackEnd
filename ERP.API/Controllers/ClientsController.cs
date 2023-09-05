@@ -45,6 +45,7 @@ namespace ERP.API.Controllers
                     p.Client.LastName.Contains(searchQuery) ||
                     p.Contact.Email.Contains(searchQuery) ||
                     p.Contact.PhoneNumber.Contains(searchQuery) ||
+                    p.Contact.Website.Contains(searchQuery) ||
                     p.Contact.Address.Contains(searchQuery)
 
                     );
@@ -65,6 +66,7 @@ namespace ERP.API.Controllers
                 LastName = p.Client.LastName,
                 Email = p.Contact.Email,
                 PhoneNumber = p.Contact.PhoneNumber,
+                Website = p.Contact.Website,
                 Address = p.Contact.Address,
 
             }).ToList();
@@ -91,10 +93,12 @@ namespace ERP.API.Controllers
 
                 var clientData = new ClientContactVM
                 {
+                    Id = client.Client.Id,
                     FirstName = client.Client.FirstName,
                     LastName = client.Client.LastName,
                     Email = client.Contact.Email,
                     PhoneNumber = client.Contact.PhoneNumber,
+                    Website = client.Contact.Website,
                     Address = client.Contact.Address,
                 };
 
@@ -143,6 +147,7 @@ namespace ERP.API.Controllers
                 LastName = model.LastName,
                 Email = model.Contact.Email,
                 PhoneNumber = model.Contact.PhoneNumber,
+                Website = model.Contact.Website,
                 Address = model.Contact.Address,
             };
 
@@ -196,6 +201,7 @@ namespace ERP.API.Controllers
                         contact.LastName = model.Contact.LastName;
                         contact.Email = model.Contact.Email;
                         contact.PhoneNumber = model.Contact.PhoneNumber;
+                        contact.Website = model.Contact.Website;
                         contact.Address = model.Contact.Address;
 
                         this._contact.Update(contact);

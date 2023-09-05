@@ -6,6 +6,7 @@ using ERP.API.Models.Employees;
 using ERP.API.Models;
 using ERP.API.Models.EmployeeGetResponse;
 using ERP.API.Models.EmployeeContactVM;
+using ERP.API.Models.DepartmentController;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -41,6 +42,7 @@ namespace ERP.API.Controllers
                     p.Employee.DOB.ToString().Contains(searchQuery) ||
                     p.Employee.CNIC.Contains(searchQuery) ||
                     p.Employee.ContractDate.ToString().Contains(searchQuery) ||
+                    p.Employee.Department.Name.Contains(searchQuery) ||
                     p.Contact.Email.Contains(searchQuery) ||
                     p.Contact.PhoneNumber.Contains(searchQuery) ||
                     p.Contact.Address.Contains(searchQuery)
@@ -54,9 +56,7 @@ namespace ERP.API.Controllers
             // Apply pagination
             query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
 
-            var employees = await query.ToListAsync();
-
-            var result = employees.Select(p => new EmployeeGetResponseVM
+            var employees = query.Select(p => new EmployeeGetResponseVM
             {
                 Id = p.Employee.Id,
                 FirstName = p.Employee.FirstName,
@@ -65,15 +65,15 @@ namespace ERP.API.Controllers
                 CNIC = p.Employee.CNIC,
                 Salary = p.Employee.Salary,
                 ContractDate = p.Employee.ContractDate,
+                Department = new DepartmentGetVM{ Id = p.Employee.Department.Id, Name = p.Employee.Department.Name },
+
                 Email = p.Contact.Email,
                 PhoneNumber = p.Contact.PhoneNumber,
                 Address = p.Contact.Address,
-
-
+                
             }).ToList();
 
-
-            var paginationResult = new PaginatedResult<EmployeeGetResponseVM>(result, totalCount);
+            var paginationResult = new PaginatedResult<EmployeeGetResponseVM>(employees, totalCount);
             return Ok(new APIResponse<object>
             {
                 IsError = false,
@@ -95,6 +95,7 @@ namespace ERP.API.Controllers
 
                 var employeeData = new EmployeeContactVM
                 {
+                    Id = employee.Employee.Id,
                     FirstName = employee.Employee.FirstName,
                     LastName = employee.Employee.LastName,
                     DOB= employee.Employee.DOB,
@@ -155,7 +156,7 @@ namespace ERP.API.Controllers
                     LastName = model.LastName,
                     Email = model.Contact.Email,
                     PhoneNumber = model.Contact.PhoneNumber,
-                    Address = model.Contact.Address
+                    Address = model.Contact.Address,
                 };
 
             _contact.Add(contacts);
