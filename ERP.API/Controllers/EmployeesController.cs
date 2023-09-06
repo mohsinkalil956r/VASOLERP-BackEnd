@@ -98,13 +98,14 @@ namespace ERP.API.Controllers
                 CNIC = employee.Employee.CNIC,
                 Salary = employee.Employee.Salary,
                 ContractDate = employee.Employee.ContractDate,
-                Department = new DepartmentGetByIdVM
-                {
-                    Id = employee.Employee.Department.Id,
-                    Name = employee.Employee.Department.Name,
-                    Hod = employee.Employee.Department.HOD
-                },
-                Contacts = new EmployeeContactGetIdVM
+                DepartmentId = employee.Employee.DepartmentId,
+                //new DepartmentGetByIdVM
+                //{
+                //    Id = employee.Employee.Department.Id,
+                //    Name = employee.Employee.Department.Name,
+                //    Hod = employee.Employee.Department.HOD
+                //},
+                Contact = new EmployeeContactGetIdVM
                 {
                     Email = employee.Contact.Email,
                     PhoneNumber = employee.Contact.PhoneNumber,
@@ -130,7 +131,7 @@ namespace ERP.API.Controllers
 
         // POST api/<ValuesController>
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] EmployeePostVM model)
+        public async Task<IActionResult> Post([FromBody] EmployeePostViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -219,8 +220,8 @@ namespace ERP.API.Controllers
                 {
                     if (contact != null && contact.Type == "Employee" && contact.ReferenceId == id)
                     {
-                        contact.FirstName = model.Contact.FirstName;
-                        contact.LastName = model.Contact.LastName;
+                        //contact.FirstName = model.Contact.FirstName;
+                        //contact.LastName = model.Contact.LastName;
                         contact.Email = model.Contact.Email;
                         contact.PhoneNumber = model.Contact.PhoneNumber;
                         contact.Address = model.Contact.Address;

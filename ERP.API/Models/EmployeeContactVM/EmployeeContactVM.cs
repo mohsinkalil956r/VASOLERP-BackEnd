@@ -14,8 +14,9 @@ namespace ERP.API.Models.EmployeeContactVM
         public string CNIC { get; set; }
         public double Salary { get; set; }
         public DateTime ContractDate { get; set; }
-        public EmployeeContactGetIdVM Contacts { get; set; }
+        public int DepartmentId { get; set; }
+        public EmployeeContactGetIdVM Contact { get; set; }
         //public DepartmentGetVM Department { get; set; }
-        public DepartmentGetByIdVM Department { get; set; }
+        //public DepartmentGetByIdVM Department { get; set; }
     }
 }
