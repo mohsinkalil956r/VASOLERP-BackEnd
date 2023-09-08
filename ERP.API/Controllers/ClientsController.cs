@@ -86,30 +86,28 @@ namespace ERP.API.Controllers
         {
             var query = this._repository.GetClientWithContact().Where(contact => contact.Contact.ReferenceId == id && contact.Contact.Type == "Client").AsQueryable();
 
-            var client = await query.FirstOrDefaultAsync();
-
-            if (client != null)
+            var client = await query.Select(client=> new ClientContactVM
             {
-
-                var clientData = new ClientContactVM
+                Id = client.Client.Id,
+                FirstName = client.Client.FirstName,
+                LastName = client.Client.LastName,
+                contact = new ContactViewModel
                 {
-                    Id = client.Client.Id,
-                    FirstName = client.Client.FirstName,
-                    LastName = client.Client.LastName,
                     Email = client.Contact.Email,
                     PhoneNumber = client.Contact.PhoneNumber,
                     Website = client.Contact.Website,
                     Address = client.Contact.Address,
-                };
+                },
+            }).FirstOrDefaultAsync();
+
+            if (client != null)
+            {
 
                 var apiResponse = new APIResponse<Object>
                 {
                     IsError = false,
                     Message = "",
-                    data = new
-                    {
-                        clientData
-                    }
+                    data = client
                 };
 
 
@@ -121,7 +119,7 @@ namespace ERP.API.Controllers
 
         // POST api/<ValuesController>
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] ClientPostVM model)
+        public async Task<IActionResult> Post([FromBody] ClientContactPostVM model)
         {
 
             if (!ModelState.IsValid)
@@ -133,7 +131,6 @@ namespace ERP.API.Controllers
             {
                FirstName = model.FirstName,
                LastName = model.LastName,
-
             };
 
             _repository.Add(client);
@@ -172,7 +169,7 @@ namespace ERP.API.Controllers
 
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] ClientPutVM model)
+        public async Task<IActionResult> Put(int id, [FromBody] ClientContactPostVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -197,18 +194,23 @@ namespace ERP.API.Controllers
                 {
                     if (contact != null && contact.Type == "Client" && contact.ReferenceId == id)
                     {
-                        contact.FirstName = model.Contact.FirstName;
-                        contact.LastName = model.Contact.LastName;
-                        contact.Email = model.Contact.Email;
-                        contact.PhoneNumber = model.Contact.PhoneNumber;
-                        contact.Website = model.Contact.Website;
-                        contact.Address = model.Contact.Address;
+                        var updateContact = new ContactViewModel
+                        {
+                            Email = model.Contact.Email,
+                            PhoneNumber = model.Contact.PhoneNumber,
+                            Website = model.Contact.Website,
+                            Address = model.Contact.Address
+                        };
+                        contact.Email = updateContact.Email;
+                        contact.PhoneNumber = updateContact.PhoneNumber;
+                        contact.Website = updateContact.Website;
+                        contact.Address = updateContact.Address;
 
                         this._contact.Update(contact);
                     }
                 }
 
-                await this._contact.SaveChanges();
+                await this._repository.SaveChanges();
 
                 return Ok(new APIResponse<object>
                 {
